@@ -269,28 +269,68 @@ export default function Home() {
   const langCards = flashcards.filter(c => c.language === language)
 
   if (setup) return (
-    <main className="min-h-screen p-6 bg-[#09090f] text-white">
+    <main className="min-h-screen relative z-10">
+      {/* Ambient */}
       <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[500px] rounded-full bg-violet-600/15 blur-[130px]" />
-        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-pink-500/10 blur-[120px]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[500px] rounded-full bg-violet-700/20 blur-[140px]" />
+        <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-pink-600/12 blur-[120px]" />
       </div>
 
-      <div className="max-w-2xl mx-auto pt-8">
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-2xl mx-auto mb-4">🗣️</div>
-          <h1 className="text-4xl font-bold mb-2">SpeakFast</h1>
-          <p className="text-white/50 text-sm">Learn any language · AI tutor · Personalized lessons · 50+ languages</p>
-          {flashcards.length > 0 && (
-            <div className="inline-flex items-center gap-2 mt-3 px-3 py-1.5 rounded-full border border-violet-500/20 bg-violet-500/8 text-violet-300 text-xs">
-              <span>📇</span> {flashcards.length} flashcards saved
-              <button onClick={() => setShowCards(true)} className="underline hover:no-underline">Review now</button>
+      {/* Sticky nav */}
+      <nav className="border-b border-white/8 backdrop-blur-xl bg-white/[0.02] sticky top-0 z-50">
+        <div className="max-w-2xl mx-auto px-6 py-3 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-lg shadow-lg shadow-violet-500/30">🗣️</div>
+            <div>
+              <span className="font-black text-lg tracking-tight">SpeakFast</span>
+              <span className="hidden sm:inline text-[10px] text-white/30 ml-2 font-normal">AI Language Tutor</span>
             </div>
-          )}
+          </div>
+          <div className="flex items-center gap-2">
+            {flashcards.length > 0 && (
+              <button onClick={() => setShowCards(true)}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-violet-500/25 bg-violet-500/10 text-violet-300 text-xs font-semibold hover:bg-violet-500/15 transition-all pop">
+                📇 {flashcards.length} cards
+              </button>
+            )}
+            <div className="px-3 py-1.5 rounded-full border border-white/8 bg-white/[0.04] text-xs text-white/40">
+              50+ languages
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <div className="max-w-2xl mx-auto px-6 pt-10 pb-16">
+        {/* Hero */}
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-violet-500/25 bg-violet-500/10 text-violet-300 text-xs font-semibold mb-5">
+            <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
+            AI Tutor · Flashcards · 50+ Languages + AI/Tech
+          </div>
+          <h1 className="text-5xl font-black tracking-tight mb-3">
+            Learn faster<br />
+            <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">with AI.</span>
+          </h1>
+          <p className="text-white/45 text-base">Pick a language, choose your goal, and start a real conversation with your AI tutor — completely free.</p>
+
+          {/* Streak teaser */}
+          <div className="flex items-center justify-center gap-6 mt-5 text-sm">
+            {[
+              { icon: '🔥', label: 'Start your streak' },
+              { icon: '📇', label: 'Auto flashcards' },
+              { icon: '🎯', label: '6 modes' },
+            ].map(s => (
+              <div key={s.label} className="flex items-center gap-1.5 text-white/40">
+                <span>{s.icon}</span>
+                <span className="text-xs">{s.label}</span>
+              </div>
+            ))}
+          </div>
         </div>
 
         {showCards && <FlashcardDeck cards={flashcards} onClose={() => setShowCards(false)} />}
 
-        <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-8 space-y-6" style={{ boxShadow: '0 0 50px rgba(139,92,246,0.12)' }}>
+        <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-7 space-y-6" style={{ boxShadow: '0 0 60px rgba(139,92,246,0.15)' }}>
           <div>
             <label className="text-xs text-white/40 uppercase tracking-wider mb-3 block">
               What do you want to learn?
@@ -352,27 +392,27 @@ export default function Home() {
   )
 
   return (
-    <main className="min-h-screen flex flex-col bg-[#09090f] text-white">
+    <main className="min-h-screen flex flex-col relative z-10">
       <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-violet-600/10 blur-[130px]" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-violet-700/12 blur-[130px]" />
       </div>
 
       {showCards && <FlashcardDeck cards={langCards.length > 0 ? langCards : flashcards} onClose={() => setShowCards(false)} />}
 
       {/* Saved words toast */}
       {savedFlash && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-40 px-4 py-2 rounded-full bg-violet-600/90 text-white text-xs font-medium shadow-lg">
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-40 px-4 py-2 rounded-full bg-violet-600 text-white text-xs font-bold shadow-lg shadow-violet-500/30 pop">
           📇 Words saved to flashcards!
         </div>
       )}
 
-      <nav className="border-b border-white/5 backdrop-blur-xl bg-white/[0.02] sticky top-0 z-50">
+      <nav className="border-b border-white/8 backdrop-blur-xl bg-white/[0.02] sticky top-0 z-50">
         <div className="max-w-3xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-sm">🗣️</div>
+            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-lg shadow-lg shadow-violet-500/30">🗣️</div>
             <div>
-              <div className="font-semibold text-sm">{language} · {modeObj?.label}</div>
-              <div className="text-xs text-white/40">{level} · {native} speaker</div>
+              <div className="font-bold text-sm">{language} <span className="text-white/30">·</span> {modeObj?.label}</div>
+              <div className="text-[10px] text-white/35">{level} level · {native} speaker</div>
             </div>
           </div>
           <div className="flex items-center gap-2">

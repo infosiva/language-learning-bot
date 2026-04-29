@@ -1,5 +1,44 @@
 @import "tailwindcss";
 * { box-sizing: border-box; }
-body { background: #07080f; color: white; }
+html { scroll-behavior: smooth; }
+body { background: #0e0b18; color: white; font-family: -apple-system, BlinkMacSystemFont, 'Inter', sans-serif; }
+
+/* Soft dot background */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: radial-gradient(rgba(139,92,246,0.06) 1.5px, transparent 1.5px);
+  background-size: 28px 28px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Chat bubble styles */
+.bubble-user {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  border-radius: 18px 18px 4px 18px;
+  box-shadow: 0 2px 12px rgba(124,58,237,0.3);
+}
+.bubble-ai {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 18px 18px 18px 4px;
+}
+
+@keyframes pop {
+  0% { transform: scale(0.8); opacity: 0; }
+  70% { transform: scale(1.05); }
+  100% { transform: scale(1); opacity: 1; }
+}
+.pop { animation: pop 0.25s ease-out forwards; }
+
+@keyframes flame {
+  0%, 100% { transform: scaleY(1) rotate(-2deg); }
+  50% { transform: scaleY(1.1) rotate(2deg); }
+}
+.flame { animation: flame 0.8s ease-in-out infinite; display: inline-block; }
+
 ::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 3px; }
+::-webkit-scrollbar-track { background: #0e0b18; }
+::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.3); border-radius: 3px; }
