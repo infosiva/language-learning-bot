@@ -7,5 +7,5 @@ export const metadata: Metadata = {
   description: 'Learn any language with a personalized AI tutor. Conversational lessons tailored to your level.',
 }
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return <html lang="en"><body className={inter.className}>{children}</body></html>
+  return <html lang="en"><body className={inter.className}>{children}<script src="/t.js" data-site="language-learning-bot-blue.vercel.app" defer></script></body></html>
 }
