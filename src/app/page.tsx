@@ -1,6 +1,24 @@
 'use client'
 import { useState, useRef, useEffect, useCallback } from 'react'
 
+function useRateLimit(key: string, limit: number) {
+  const getUsage = useCallback(() => {
+    if (typeof window === 'undefined') return { count: 0, date: '' }
+    try { return JSON.parse(localStorage.getItem(key) || '{"count":0,"date":""}') } catch { return { count: 0, date: '' } }
+  }, [key])
+  const today = new Date().toISOString().split('T')[0]
+  const usage = getUsage()
+  const count = usage.date === today ? usage.count : 0
+  const remaining = Math.max(0, limit - count)
+  const increment = useCallback(() => {
+    const d = new Date().toISOString().split('T')[0]
+    const u = getUsage()
+    const c = u.date === d ? u.count + 1 : 1
+    localStorage.setItem(key, JSON.stringify({ count: c, date: d }))
+  }, [key, getUsage])
+  return { remaining, increment, isLimited: remaining === 0 }
+}
+
 const LANGUAGE_GROUPS = {
   'European': ['Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Dutch', 'Swedish', 'Polish', 'Greek', 'Ukrainian'],
   'Asian': ['Japanese', 'Mandarin Chinese', 'Korean', 'Hindi', 'Tamil', 'Bengali', 'Vietnamese', 'Thai', 'Indonesian', 'Malay'],
@@ -183,6 +201,7 @@ function LanguagePicker({ selected, onSelect }: { selected: string; onSelect: (l
 }
 
 export default function Home() {
+  const { remaining, increment, isLimited } = useRateLimit('speakfast-usage', 20)
   const [setup, setSetup] = useState(true)
   const [language, setLanguage] = useState('Spanish')
   const [native, setNative] = useState('English')
@@ -246,7 +265,8 @@ export default function Home() {
   }
 
   async function send() {
-    if (!input.trim() || loading) return
+    if (!input.trim() || loading || isLimited) return
+    increment()
     const userMsg = input.trim()
     setInput('')
     const newMsgs: Message[] = [...messages, { role: 'user', content: userMsg }]
@@ -388,6 +408,38 @@ export default function Home() {
           </button>
         </div>
       </div>
+
+      {/* Pricing */}
+      <section id="pricing" className="px-6 py-20 border-t border-white/5 mt-8">
+        <div className="max-w-2xl mx-auto">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-black mb-2">Simple pricing</h2>
+            <p className="text-white/35 text-sm">20 messages free every day · No credit card</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-px border border-white/10 rounded-2xl overflow-hidden">
+            {[
+              { name: 'Free', price: '$0', sub: 'forever', features: ['20 messages / day', '50+ languages', '6 session modes', 'Auto flashcard saving', 'AI/Tech languages', 'Progress tracking'], cta: 'Start free', highlight: false },
+              { name: 'Pro', price: '$5', sub: '/month', features: ['Unlimited messages', 'Save study progress', 'Custom vocab lists', 'Pronunciation feedback', 'Grammar report cards', 'Offline flashcards'], cta: 'Go Pro →', highlight: true },
+            ].map(plan => (
+              <div key={plan.name} className={`p-7 ${plan.highlight ? 'bg-violet-950/40' : 'bg-white/[0.02]'}`}>
+                <div className={`text-xs font-bold uppercase tracking-widest mb-1 ${plan.highlight ? 'text-violet-400' : 'text-white/30'}`}>{plan.name}</div>
+                <div className={`text-4xl font-black mb-0.5 ${plan.highlight ? 'text-white' : 'text-white/50'}`}>{plan.price}</div>
+                <div className={`text-sm mb-5 ${plan.highlight ? 'text-violet-600' : 'text-white/25'}`}>{plan.sub}</div>
+                <ul className="space-y-2 mb-6">
+                  {plan.features.map(f => (
+                    <li key={f} className={`flex items-start gap-2 text-sm ${plan.highlight ? 'text-white/70' : 'text-white/30'}`}>
+                      <span className={plan.highlight ? 'text-violet-400 mt-0.5' : 'text-white/20 mt-0.5'}>✓</span> {f}
+                    </li>
+                  ))}
+                </ul>
+                <button className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all ${plan.highlight ? 'bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500' : 'border border-white/10 text-white/30 cursor-default'}`}>
+                  {plan.cta}
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
     </main>
   )
 
@@ -485,18 +537,30 @@ export default function Home() {
 
       {/* Input */}
       <div className="border-t border-white/5 bg-black/20 backdrop-blur-xl p-4">
-        <div className="max-w-3xl mx-auto flex gap-3">
-          <input
-            value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
-            placeholder={mode === 'quiz' ? 'Type your answer...' : mode === 'translate' ? 'Type to translate...' : `Reply in ${language} or ask anything...`}
-            className="flex-1 bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 focus:outline-none focus:border-violet-500/50 transition-all"
-          />
-          <button onClick={send} disabled={!input.trim() || loading}
-            className="px-5 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 font-semibold text-sm transition-all disabled:opacity-40">
-            Send
-          </button>
+        <div className="max-w-3xl mx-auto">
+          {isLimited ? (
+            <div className="text-center py-2 px-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
+              <p className="text-amber-400 text-sm font-semibold">Daily limit reached (20 free messages/day)</p>
+              <a href="#pricing" className="text-xs text-amber-600 hover:text-amber-400 underline">Upgrade for unlimited →</a>
+            </div>
+          ) : (
+            <div className="flex gap-3">
+              <input
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
+                placeholder={mode === 'quiz' ? 'Type your answer...' : mode === 'translate' ? 'Type to translate...' : `Reply in ${language} or ask anything...`}
+                className="flex-1 bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3 text-sm text-white placeholder-white/25 focus:outline-none focus:border-violet-500/50 transition-all"
+              />
+              <button onClick={send} disabled={!input.trim() || loading}
+                className="px-5 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 font-semibold text-sm transition-all disabled:opacity-40">
+                Send
+              </button>
+            </div>
+          )}
+          {!isLimited && remaining < 10 && (
+            <p className="text-center text-[10px] text-white/20 mt-2">{remaining} messages left today · <a href="#pricing" className="text-violet-400/50 hover:text-violet-400">Upgrade for unlimited</a></p>
+          )}
         </div>
       </div>
     </main>
