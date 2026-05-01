@@ -19,6 +19,29 @@ function useRateLimit(key: string, limit: number) {
   return { remaining, increment, isLimited: remaining === 0 }
 }
 
+// ── Streak helpers ────────────────────────────────────────────
+function useStreak() {
+  const get = useCallback(() => {
+    if (typeof window === 'undefined') return { streak: 0, lastDate: '' }
+    try { return JSON.parse(localStorage.getItem('speakfast-streak') || '{"streak":0,"lastDate":""}') } catch { return { streak: 0, lastDate: '' } }
+  }, [])
+
+  const bump = useCallback(() => {
+    const today = new Date().toISOString().split('T')[0]
+    const s = get()
+    if (s.lastDate === today) return s.streak
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+    const newStreak = s.lastDate === yesterday ? s.streak + 1 : 1
+    const next = { streak: newStreak, lastDate: today }
+    localStorage.setItem('speakfast-streak', JSON.stringify(next))
+    return newStreak
+  }, [get])
+
+  const current = get()
+  const today = new Date().toISOString().split('T')[0]
+  return { streak: current.streak, todayDone: current.lastDate === today, bump }
+}
+
 const LANGUAGE_GROUPS = {
   'European': ['Spanish', 'French', 'German', 'Italian', 'Portuguese', 'Dutch', 'Swedish', 'Polish', 'Greek', 'Ukrainian'],
   'Asian': ['Japanese', 'Mandarin Chinese', 'Korean', 'Hindi', 'Tamil', 'Bengali', 'Vietnamese', 'Thai', 'Indonesian', 'Malay'],
@@ -40,6 +63,7 @@ const MODES = [
 
 interface Message { role: 'user' | 'assistant'; content: string }
 interface Flashcard { word: string; translation: string; language: string; example?: string; addedAt: string }
+interface GrammarError { original: string; correction: string; at: string }
 
 // Extract word=translation pairs from assistant messages like "palabra - word" or "palabra: word"
 function extractWords(text: string, language: string): Flashcard[] {
@@ -59,38 +83,42 @@ function extractWords(text: string, language: string): Flashcard[] {
   return cards
 }
 
-function FlashcardDeck({ cards, onClose }: { cards: Flashcard[]; onClose: () => void }) {
+// Extract grammar corrections like "✓ Better: ..." from assistant messages
+function extractGrammarErrors(text: string): GrammarError[] {
+  const errors: GrammarError[] = []
+  const pattern = /✓\s*Better:\s*(.+?)(?:\n|$)/gi
+  let match
+  while ((match = pattern.exec(text)) !== null) {
+    errors.push({ original: '', correction: match[1].trim(), at: new Date().toISOString() })
+  }
+  return errors
+}
+
+function FlashcardDeck({ cards, onClose, onAdd }: { cards: Flashcard[]; onClose: () => void; onAdd: (word: string, translation: string, language: string) => void }) {
   const [idx, setIdx] = useState(0)
   const [flipped, setFlipped] = useState(false)
   const [known, setKnown] = useState<Set<number>>(new Set())
+  const [addMode, setAddMode] = useState(false)
+  const [newWord, setNewWord] = useState('')
+  const [newTranslation, setNewTranslation] = useState('')
+  const [newLang, setNewLang] = useState('')
 
   const card = cards[idx]
-  const remaining = cards.filter((_, i) => !known.has(i))
 
   function markKnown() {
     setKnown(k => new Set([...k, idx]))
     setFlipped(false)
-    setIdx(i => (i + 1) % cards.length)
+    setIdx(i => (i + 1) % Math.max(cards.length, 1))
   }
 
-  function next() {
-    setFlipped(false)
-    setIdx(i => (i + 1) % cards.length)
-  }
+  function next() { setFlipped(false); setIdx(i => (i + 1) % Math.max(cards.length, 1)) }
+  function prev() { setFlipped(false); setIdx(i => (i - 1 + Math.max(cards.length, 1)) % Math.max(cards.length, 1)) }
 
-  function prev() {
-    setFlipped(false)
-    setIdx(i => (i - 1 + cards.length) % cards.length)
+  function submitAdd() {
+    if (!newWord.trim() || !newTranslation.trim()) return
+    onAdd(newWord.trim(), newTranslation.trim(), newLang.trim() || 'Custom')
+    setNewWord(''); setNewTranslation(''); setAddMode(false)
   }
-
-  if (cards.length === 0) return (
-    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-6">
-      <div className="bg-[#111120] rounded-2xl border border-white/10 p-8 text-center max-w-sm w-full">
-        <p className="text-white/40 mb-4">No flashcards yet. Use Vocabulary mode to save words.</p>
-        <button onClick={onClose} className="px-6 py-2 rounded-lg bg-violet-600 text-sm font-medium">Close</button>
-      </div>
-    </div>
-  )
 
   return (
     <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-6">
@@ -98,55 +126,145 @@ function FlashcardDeck({ cards, onClose }: { cards: Flashcard[]; onClose: () => 
         <div className="flex items-center justify-between mb-6">
           <div>
             <h3 className="font-semibold">Flashcards</h3>
-            <p className="text-xs text-white/40">{cards.length - known.size} remaining · {known.size} known</p>
+            <p className="text-xs text-white/40">{cards.length} cards · {known.size} known</p>
+          </div>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setAddMode(m => !m)}
+              className="text-xs px-2.5 py-1 rounded-lg border border-violet-500/30 bg-violet-500/10 text-violet-300 hover:bg-violet-500/20 transition-all">
+              + Add word
+            </button>
+            <button onClick={onClose} className="text-white/30 hover:text-white/70 text-xl">✕</button>
+          </div>
+        </div>
+
+        {/* Add word form */}
+        {addMode && (
+          <div className="mb-5 p-4 rounded-xl border border-violet-500/20 bg-violet-500/8 space-y-2">
+            <input value={newWord} onChange={e => setNewWord(e.target.value)}
+              placeholder="Word or phrase"
+              className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-violet-500/50" />
+            <input value={newTranslation} onChange={e => setNewTranslation(e.target.value)}
+              placeholder="Translation / meaning"
+              className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-violet-500/50" />
+            <input value={newLang} onChange={e => setNewLang(e.target.value)}
+              placeholder="Language (e.g. Spanish)"
+              className="w-full bg-white/[0.06] border border-white/10 rounded-lg px-3 py-2 text-sm text-white placeholder-white/30 focus:outline-none focus:border-violet-500/50" />
+            <button onClick={submitAdd}
+              className="w-full py-2 rounded-lg bg-violet-600 text-sm font-medium hover:bg-violet-500 transition-all">
+              Save card
+            </button>
+          </div>
+        )}
+
+        {cards.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-white/40 mb-4">No flashcards yet. Use Vocabulary mode or add words manually above.</p>
+            <button onClick={onClose} className="px-6 py-2 rounded-lg bg-violet-600 text-sm font-medium">Close</button>
+          </div>
+        ) : (
+          <>
+            {/* Progress bar */}
+            <div className="h-1 bg-white/10 rounded-full mb-6">
+              <div className="h-full bg-violet-500 rounded-full transition-all" style={{ width: `${(known.size / cards.length) * 100}%` }} />
+            </div>
+
+            {known.size === cards.length ? (
+              <div className="text-center py-8">
+                <div className="text-4xl mb-3">🎉</div>
+                <p className="font-semibold mb-1">All done!</p>
+                <p className="text-white/40 text-sm mb-6">You know all {cards.length} words</p>
+                <button onClick={() => { setKnown(new Set()); setIdx(0) }} className="px-6 py-2 rounded-lg bg-violet-600 text-sm font-medium">Practice again</button>
+              </div>
+            ) : (
+              <>
+                <button
+                  onClick={() => setFlipped(f => !f)}
+                  className="w-full min-h-[160px] rounded-xl border border-white/10 bg-white/[0.04] flex flex-col items-center justify-center gap-2 p-6 mb-6 hover:bg-white/[0.07] transition-all cursor-pointer"
+                >
+                  {!flipped ? (
+                    <>
+                      <p className="text-2xl font-bold text-white">{card.word}</p>
+                      <p className="text-xs text-white/30">{card.language} · tap to reveal</p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xs text-white/40 mb-1">{card.word}</p>
+                      <p className="text-xl font-bold text-violet-300">{card.translation}</p>
+                      {card.example && <p className="text-xs text-white/40 text-center mt-2 italic">{card.example}</p>}
+                    </>
+                  )}
+                </button>
+                <div className="flex gap-2">
+                  <button onClick={prev} className="px-4 py-2 rounded-lg border border-white/10 bg-white/[0.04] text-sm text-white/50 hover:text-white transition-all">←</button>
+                  <button onClick={markKnown}
+                    className="flex-1 py-2 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-sm font-medium hover:bg-emerald-500/30 transition-all">
+                    ✓ I know this
+                  </button>
+                  <button onClick={next} className="px-4 py-2 rounded-lg border border-white/10 bg-white/[0.04] text-sm text-white/50 hover:text-white transition-all">→</button>
+                </div>
+                <p className="text-center text-[10px] text-white/25 mt-3">{idx + 1} / {cards.length}</p>
+              </>
+            )}
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function GrammarReport({ errors, onClose }: { errors: GrammarError[]; onClose: () => void }) {
+  if (errors.length === 0) return (
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-6">
+      <div className="bg-[#111120] rounded-2xl border border-white/10 p-8 max-w-sm w-full text-center">
+        <div className="text-3xl mb-3">✨</div>
+        <p className="font-semibold mb-1">No errors recorded yet</p>
+        <p className="text-white/40 text-sm mb-5">Start a session — corrections from the AI will appear here automatically.</p>
+        <button onClick={onClose} className="px-6 py-2 rounded-lg bg-violet-600 text-sm font-medium">Close</button>
+      </div>
+    </div>
+  )
+
+  const recent = [...errors].reverse().slice(0, 20)
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-6">
+      <div className="bg-[#111120] rounded-2xl border border-white/10 p-8 max-w-sm w-full max-h-[80vh] flex flex-col">
+        <div className="flex items-center justify-between mb-5 flex-shrink-0">
+          <div>
+            <h3 className="font-semibold">Grammar Report</h3>
+            <p className="text-xs text-white/40">{errors.length} correction{errors.length !== 1 ? 's' : ''} recorded this session</p>
           </div>
           <button onClick={onClose} className="text-white/30 hover:text-white/70 text-xl">✕</button>
         </div>
 
-        {/* Progress bar */}
-        <div className="h-1 bg-white/10 rounded-full mb-6">
-          <div className="h-full bg-violet-500 rounded-full transition-all" style={{ width: `${(known.size / cards.length) * 100}%` }} />
+        {/* Score card */}
+        <div className="mb-4 p-3 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center gap-4 flex-shrink-0">
+          <div className="text-center">
+            <div className="text-2xl font-black text-violet-300">{errors.length}</div>
+            <div className="text-[10px] text-white/40">total fixes</div>
+          </div>
+          <div className="flex-1 text-xs text-white/50 leading-relaxed">
+            {errors.length <= 2 ? '🌟 Excellent! Very few mistakes.' :
+             errors.length <= 5 ? '👍 Good progress — keep practising.' :
+             '📈 Lots to learn from! Review corrections below.'}
+          </div>
         </div>
 
-        {remaining.length === 0 ? (
-          <div className="text-center py-8">
-            <div className="text-4xl mb-3">🎉</div>
-            <p className="font-semibold mb-1">All done!</p>
-            <p className="text-white/40 text-sm mb-6">You know all {cards.length} words</p>
-            <button onClick={() => { setKnown(new Set()); setIdx(0) }} className="px-6 py-2 rounded-lg bg-violet-600 text-sm font-medium">Practice again</button>
-          </div>
-        ) : (
-          <>
-            {/* Card */}
-            <button
-              onClick={() => setFlipped(f => !f)}
-              className="w-full min-h-[160px] rounded-xl border border-white/10 bg-white/[0.04] flex flex-col items-center justify-center gap-2 p-6 mb-6 hover:bg-white/[0.07] transition-all cursor-pointer"
-            >
-              {!flipped ? (
-                <>
-                  <p className="text-2xl font-bold text-white">{card.word}</p>
-                  <p className="text-xs text-white/30">{card.language} · tap to reveal</p>
-                </>
-              ) : (
-                <>
-                  <p className="text-xs text-white/40 mb-1">{card.word}</p>
-                  <p className="text-xl font-bold text-violet-300">{card.translation}</p>
-                  {card.example && <p className="text-xs text-white/40 text-center mt-2 italic">{card.example}</p>}
-                </>
-              )}
-            </button>
-
-            <div className="flex gap-2">
-              <button onClick={prev} className="px-4 py-2 rounded-lg border border-white/10 bg-white/[0.04] text-sm text-white/50 hover:text-white transition-all">←</button>
-              <button onClick={markKnown}
-                className="flex-1 py-2 rounded-lg bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-sm font-medium hover:bg-emerald-500/30 transition-all">
-                ✓ I know this
-              </button>
-              <button onClick={next} className="px-4 py-2 rounded-lg border border-white/10 bg-white/[0.04] text-sm text-white/50 hover:text-white transition-all">→</button>
+        <div className="overflow-y-auto flex-1 space-y-2 pr-1">
+          {recent.map((e, i) => (
+            <div key={i} className="p-3 rounded-xl border border-white/8 bg-white/[0.02]">
+              <div className="text-[10px] text-white/30 mb-1">Correction #{errors.length - i}</div>
+              <div className="flex items-start gap-2">
+                <span className="text-emerald-400 text-xs mt-0.5 flex-shrink-0">✓</span>
+                <p className="text-sm text-white/80 leading-snug">{e.correction}</p>
+              </div>
             </div>
-            <p className="text-center text-[10px] text-white/25 mt-3">{idx + 1} / {cards.length}</p>
-          </>
-        )}
+          ))}
+        </div>
+
+        <button onClick={onClose} className="mt-4 w-full py-2.5 rounded-xl bg-violet-600 text-sm font-medium hover:bg-violet-500 transition-all flex-shrink-0">
+          Close
+        </button>
       </div>
     </div>
   )
@@ -202,6 +320,7 @@ function LanguagePicker({ selected, onSelect }: { selected: string; onSelect: (l
 
 export default function Home() {
   const { remaining, increment, isLimited } = useRateLimit('speakfast-usage', 20)
+  const { streak, todayDone, bump } = useStreak()
   const [setup, setSetup] = useState(true)
   const [language, setLanguage] = useState('Spanish')
   const [native, setNative] = useState('English')
@@ -215,8 +334,11 @@ export default function Home() {
     if (typeof window === 'undefined') return []
     try { return JSON.parse(localStorage.getItem('speakfast-cards') || '[]') } catch { return [] }
   })
+  const [grammarErrors, setGrammarErrors] = useState<GrammarError[]>([])
   const [showCards, setShowCards] = useState(false)
+  const [showGrammar, setShowGrammar] = useState(false)
   const [savedFlash, setSavedFlash] = useState(false)
+  const [currentStreak, setCurrentStreak] = useState(streak)
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
@@ -224,6 +346,15 @@ export default function Home() {
   const saveCards = useCallback((cards: Flashcard[]) => {
     setFlashcards(cards)
     localStorage.setItem('speakfast-cards', JSON.stringify(cards))
+  }, [])
+
+  const addCardManually = useCallback((word: string, translation: string, language: string) => {
+    setFlashcards(prev => {
+      if (prev.find(c => c.word === word && c.language === language)) return prev
+      const updated = [...prev, { word, translation, language, addedAt: new Date().toISOString() }]
+      localStorage.setItem('speakfast-cards', JSON.stringify(updated))
+      return updated
+    })
   }, [])
 
   const isTechLang = ['Python', 'JavaScript', 'SQL', 'Prompt Engineering', 'AI Concepts'].includes(language)
@@ -246,9 +377,19 @@ export default function Home() {
     }
   }
 
+  function addGrammarFromMessage(text: string) {
+    const errors = extractGrammarErrors(text)
+    if (errors.length > 0) {
+      setGrammarErrors(prev => [...prev, ...errors])
+    }
+  }
+
   async function startChat() {
     setSetup(false)
     setLoading(true)
+    // Bump streak on first message of session
+    const newStreak = bump()
+    setCurrentStreak(newStreak)
     const greeting = isTechLang
       ? `Hi! I want to learn ${language}. Start with a friendly introduction and give me my first lesson.`
       : `Hello! Please greet me warmly in ${language}, introduce yourself as my tutor, and start our first ${mode} session at ${level} level.`
@@ -261,6 +402,7 @@ export default function Home() {
     const reply = data.reply
     setMessages([{ role: 'assistant', content: reply }])
     addWordsFromMessage(reply)
+    addGrammarFromMessage(reply)
     setLoading(false)
   }
 
@@ -282,6 +424,7 @@ export default function Home() {
     setMessages([...newMsgs, { role: 'assistant', content: reply }])
     setWordCount(w => w + userMsg.split(' ').length)
     addWordsFromMessage(reply)
+    addGrammarFromMessage(reply)
     setLoading(false)
   }
 
@@ -307,9 +450,15 @@ export default function Home() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* Streak badge */}
+            {streak > 0 && (
+              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold ${todayDone ? 'border-orange-500/40 bg-orange-500/15 text-orange-300' : 'border-white/10 bg-white/[0.04] text-white/40'}`}>
+                🔥 {streak} day{streak !== 1 ? 's' : ''}
+              </div>
+            )}
             {flashcards.length > 0 && (
               <button onClick={() => setShowCards(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-violet-500/25 bg-violet-500/10 text-violet-300 text-xs font-semibold hover:bg-violet-500/15 transition-all pop">
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-violet-500/25 bg-violet-500/10 text-violet-300 text-xs font-semibold hover:bg-violet-500/15 transition-all">
                 📇 {flashcards.length} cards
               </button>
             )}
@@ -325,7 +474,7 @@ export default function Home() {
         <div className="text-center mb-8">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-violet-500/25 bg-violet-500/10 text-violet-300 text-xs font-semibold mb-5">
             <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
-            AI Tutor · Flashcards · 50+ Languages + AI/Tech
+            AI Tutor · Flashcards · Streaks · 50+ Languages
           </div>
           <h1 className="text-5xl font-black tracking-tight mb-3">
             Learn faster<br />
@@ -333,12 +482,12 @@ export default function Home() {
           </h1>
           <p className="text-white/45 text-base">Pick a language, choose your goal, and start a real conversation with your AI tutor — completely free.</p>
 
-          {/* Streak teaser */}
+          {/* Streak + feature teasers */}
           <div className="flex items-center justify-center gap-6 mt-5 text-sm">
             {[
-              { icon: '🔥', label: 'Start your streak' },
+              { icon: '🔥', label: streak > 0 ? `${streak}-day streak` : 'Start your streak' },
               { icon: '📇', label: 'Auto flashcards' },
-              { icon: '🎯', label: '6 modes' },
+              { icon: '📊', label: 'Grammar reports' },
             ].map(s => (
               <div key={s.label} className="flex items-center gap-1.5 text-white/40">
                 <span>{s.icon}</span>
@@ -348,7 +497,7 @@ export default function Home() {
           </div>
         </div>
 
-        {showCards && <FlashcardDeck cards={flashcards} onClose={() => setShowCards(false)} />}
+        {showCards && <FlashcardDeck cards={flashcards} onClose={() => setShowCards(false)} onAdd={addCardManually} />}
 
         <div className="rounded-2xl border border-white/10 bg-white/[0.03] backdrop-blur-xl p-7 space-y-6" style={{ boxShadow: '0 0 60px rgba(139,92,246,0.15)' }}>
           <div>
@@ -418,8 +567,8 @@ export default function Home() {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-px border border-white/10 rounded-2xl overflow-hidden">
             {[
-              { name: 'Free', price: '$0', sub: 'forever', features: ['20 messages / day', '50+ languages', '6 session modes', 'Auto flashcard saving', 'AI/Tech languages', 'Progress tracking'], cta: 'Start free', highlight: false },
-              { name: 'Pro', price: '$5', sub: '/month', features: ['Unlimited messages', 'Save study progress', 'Custom vocab lists', 'Pronunciation feedback', 'Grammar report cards', 'Offline flashcards'], cta: 'Go Pro →', highlight: true },
+              { name: 'Free', price: '$0', sub: 'forever', features: ['20 messages / day', '50+ languages', '6 session modes', 'Auto flashcard saving', 'Custom vocab lists', 'Daily streak tracking'], cta: 'Start free', highlight: false },
+              { name: 'Pro', price: '$5', sub: '/month', features: ['Unlimited messages', 'Save study progress', 'Grammar report cards', 'Pronunciation feedback', 'Offline flashcards', 'Priority AI speed'], cta: 'Go Pro →', highlight: true },
             ].map(plan => (
               <div key={plan.name} className={`p-7 ${plan.highlight ? 'bg-violet-950/40' : 'bg-white/[0.02]'}`}>
                 <div className={`text-xs font-bold uppercase tracking-widest mb-1 ${plan.highlight ? 'text-violet-400' : 'text-white/30'}`}>{plan.name}</div>
@@ -449,11 +598,12 @@ export default function Home() {
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] rounded-full bg-violet-700/12 blur-[130px]" />
       </div>
 
-      {showCards && <FlashcardDeck cards={langCards.length > 0 ? langCards : flashcards} onClose={() => setShowCards(false)} />}
+      {showCards && <FlashcardDeck cards={langCards.length > 0 ? langCards : flashcards} onClose={() => setShowCards(false)} onAdd={addCardManually} />}
+      {showGrammar && <GrammarReport errors={grammarErrors} onClose={() => setShowGrammar(false)} />}
 
       {/* Saved words toast */}
       {savedFlash && (
-        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-40 px-4 py-2 rounded-full bg-violet-600 text-white text-xs font-bold shadow-lg shadow-violet-500/30 pop">
+        <div className="fixed top-20 left-1/2 -translate-x-1/2 z-40 px-4 py-2 rounded-full bg-violet-600 text-white text-xs font-bold shadow-lg shadow-violet-500/30">
           📇 Words saved to flashcards!
         </div>
       )}
@@ -468,10 +618,21 @@ export default function Home() {
             </div>
           </div>
           <div className="flex items-center gap-2">
+            {/* Streak badge */}
+            {currentStreak > 0 && (
+              <div className="hidden sm:flex items-center gap-1 px-2 py-1 rounded-lg border border-orange-500/30 bg-orange-500/10 text-orange-300 text-xs font-semibold">
+                🔥 {currentStreak}
+              </div>
+            )}
             <div className="hidden sm:flex items-center gap-3 text-xs text-white/30">
               <span>💬 {messages.length}</span>
               {wordCount > 0 && <span>📝 {wordCount}w</span>}
             </div>
+            {/* Grammar report button */}
+            <button onClick={() => setShowGrammar(true)}
+              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] text-xs text-white/50 hover:text-white/80 transition-all">
+              📊 {grammarErrors.length}
+            </button>
             {/* Flashcard button */}
             <button onClick={() => setShowCards(true)}
               className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] text-xs text-white/50 hover:text-white/80 transition-all">
@@ -481,7 +642,7 @@ export default function Home() {
               className="bg-white/[0.05] border border-white/10 rounded-lg px-2 py-1 text-xs text-white/60 focus:outline-none">
               {MODES.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
             </select>
-            <button onClick={() => { setSetup(true); setMessages([]); setWordCount(0) }}
+            <button onClick={() => { setSetup(true); setMessages([]); setWordCount(0); setGrammarErrors([]) }}
               className="text-xs text-white/30 hover:text-white/60 transition-colors">
               ↩
             </button>
