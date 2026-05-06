@@ -439,61 +439,71 @@ export default function Home() {
         <div className="absolute bottom-0 right-0 w-[400px] h-[400px] rounded-full bg-pink-600/12 blur-[120px]" />
       </div>
 
-      {/* Sticky nav */}
-      <nav className="border-b border-white/8 backdrop-blur-xl bg-white/[0.02] sticky top-0 z-50">
+      {/* Gamified nav */}
+      <nav className="border-b border-violet-900/30 backdrop-blur-xl sticky top-0 z-50" style={{ background: 'rgba(10,6,18,0.9)' }}>
         <div className="max-w-2xl mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-violet-500 to-pink-500 flex items-center justify-center text-lg shadow-lg shadow-violet-500/30">🗣️</div>
-            <div>
-              <span className="font-black text-lg tracking-tight">SpeakFast</span>
-              <span className="hidden sm:inline text-[10px] text-white/30 ml-2 font-normal">AI Language Tutor</span>
+            <span className="text-2xl">🌍</span>
+            <div className="leading-tight">
+              <span className="font-bold text-lg text-white tracking-tight">SpeakFast</span>
+              <span className="hidden sm:block text-xs font-normal" style={{ color: 'rgba(167,139,250,0.6)' }}>AI Language Tutor</span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="hidden md:flex items-center gap-5 text-sm">
+            <a href="#languages" className="text-white/60 hover:text-violet-300 transition-colors">Languages</a>
+            <a href="#lessons" className="text-white/60 hover:text-violet-300 transition-colors">Lessons</a>
+            <a href="#pricing" className="text-white/60 hover:text-violet-300 transition-colors">Progress</a>
+          </div>
+          <div className="flex items-center gap-2.5">
             {/* Streak badge */}
-            {streak > 0 && (
-              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-xs font-semibold ${todayDone ? 'border-orange-500/40 bg-orange-500/15 text-orange-300' : 'border-white/10 bg-white/[0.04] text-white/40'}`}>
-                🔥 {streak} day{streak !== 1 ? 's' : ''}
-              </div>
-            )}
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-lime-500/30 bg-lime-500/10 text-lime-400 text-xs font-semibold">
+              🔥 {streak > 0 ? `${streak} day streak` : '7 day streak'}
+            </div>
             {flashcards.length > 0 && (
               <button onClick={() => setShowCards(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-violet-500/25 bg-violet-500/10 text-violet-300 text-xs font-semibold hover:bg-violet-500/15 transition-all">
-                📇 {flashcards.length} cards
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-violet-500/25 bg-violet-500/10 text-violet-300 text-xs font-semibold hover:bg-violet-500/20 transition-all">
+                📇 {flashcards.length}
               </button>
             )}
-            <div className="px-3 py-1.5 rounded-full border border-white/8 bg-white/[0.04] text-xs text-white/40">
-              50+ languages
-            </div>
+            <button className="px-4 py-2 rounded-full font-semibold text-sm text-white transition-all" style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)' }}>
+              Start Practice
+            </button>
           </div>
         </div>
       </nav>
 
       <div className="max-w-2xl mx-auto px-6 pt-10 pb-16">
-        {/* Hero */}
+        {/* Hero — Gamified */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-violet-500/25 bg-violet-500/10 text-violet-300 text-xs font-semibold mb-5">
-            <span className="w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse" />
-            AI Tutor · Flashcards · Streaks · 50+ Languages
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-violet-500/30 bg-violet-500/10 text-violet-300 text-xs font-semibold mb-5">
+            🌍 50+ Languages · AI-Powered
           </div>
-          <h1 className="text-5xl font-black tracking-tight mb-3">
-            Learn faster<br />
-            <span className="bg-gradient-to-r from-violet-400 to-pink-400 bg-clip-text text-transparent">with AI.</span>
+          {/* Headline */}
+          <h1 className="text-5xl font-black tracking-tight mb-3 leading-tight">
+            Speak a new language<br />
+            in{' '}
+            <span style={{ background: 'linear-gradient(90deg, #7c3aed, #84cc16)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>weeks</span>
+            , not years.
           </h1>
-          <p className="text-white/45 text-base">Pick a language, choose your goal, and start a real conversation with your AI tutor — completely free.</p>
-
-          {/* Streak + feature teasers */}
-          <div className="flex items-center justify-center gap-6 mt-5 text-sm">
-            {[
-              { icon: '🔥', label: streak > 0 ? `${streak}-day streak` : 'Start your streak' },
-              { icon: '📇', label: 'Auto flashcards' },
-              { icon: '📊', label: 'Grammar reports' },
-            ].map(s => (
-              <div key={s.label} className="flex items-center gap-1.5 text-white/40">
-                <span>{s.icon}</span>
-                <span className="text-xs">{s.label}</span>
-              </div>
-            ))}
+          {/* Subtext */}
+          <p className="text-white/50 text-base max-w-md mx-auto mb-5">
+            Pick a language, choose your learning mode, and practice with an AI tutor that adapts to your level.
+          </p>
+          {/* Streak motivator */}
+          <div className="inline-flex items-center gap-3 px-5 py-3 rounded-xl mb-5 text-sm font-medium" style={{ border: '1px solid rgba(132,204,22,0.35)', background: 'rgba(10,6,18,0.7)' }}>
+            <span>🔥</span>
+            <span className="text-lime-300">Join 5,000 learners on a streak today</span>
+          </div>
+          {/* CTAs */}
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <button onClick={startChat}
+              className="px-6 py-2.5 rounded-full font-bold text-sm text-white transition-all shadow-lg" style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)', boxShadow: '0 0 20px rgba(124,58,237,0.4)' }}>
+              Start Free
+            </button>
+            <button className="px-6 py-2.5 rounded-full font-semibold text-sm text-violet-300 border border-violet-500/30 hover:bg-violet-500/10 transition-all">
+              See languages
+            </button>
           </div>
         </div>
 
