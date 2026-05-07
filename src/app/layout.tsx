@@ -4,7 +4,7 @@ import SharedNavbar from '@/components/SharedNavbar'
 import SharedFooter from '@/components/SharedFooter'
 import type { BrandConfig } from '@/components/SharedNavbar'
 
-export const brand: BrandConfig = {
+const brand: BrandConfig = {
   name: 'SpeakFast',
   tagline: 'AI language tutor — conversational lessons tailored to your level and goals.',
   icon: '🗣️',
