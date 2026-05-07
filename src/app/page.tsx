@@ -607,8 +607,8 @@ export default function Home() {
       {/* Noise overlay */}
       <div className="noise-overlay" aria-hidden="true" />
       {/* Ambient orbs — animated, replaces static blur */}
-      <div className="orb orb-1" style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.15), transparent 70%)' }} aria-hidden="true" />
-      <div className="orb orb-2" style={{ background: 'radial-gradient(circle, rgba(167,139,250,0.10), transparent 70%)', animationDelay: '-9s' }} aria-hidden="true" />
+      <div className="liquid-blob liquid-blob-1" style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.15), transparent 70%)' }} aria-hidden="true" />
+      <div className="liquid-blob liquid-blob-2" style={{ background: 'radial-gradient(circle, rgba(167,139,250,0.10), transparent 70%)', animationDelay: '-9s' }} aria-hidden="true" />
 
       {showCards && <FlashcardDeck cards={langCards.length > 0 ? langCards : flashcards} onClose={() => setShowCards(false)} onAdd={addCardManually} />}
       {showGrammar && <GrammarReport errors={grammarErrors} onClose={() => setShowGrammar(false)} />}
