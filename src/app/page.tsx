@@ -305,7 +305,9 @@ function LanguagePicker({ selected, onSelect }: { selected: string; onSelect: (l
 export default function Home() {
   const { count: gateCount, showGate, increment: gateIncrement, onRegistered, dismissGate, isRegistered } = useGate('speakfast', 20)
   const remaining = Math.max(0, 20 - gateCount)
-  const isLimited = !isRegistered && gateCount >= 20
+  const [isPro, setIsPro] = useState(false)
+  const isLimited = !isRegistered && !isPro && gateCount >= 20
+  const [checkoutLoading, setCheckoutLoading] = useState(false)
   const { streak, todayDone, bump } = useStreak()
   const [setup, setSetup] = useState(true)
   const [language, setLanguage] = useState('Spanish')
@@ -328,6 +330,32 @@ export default function Home() {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (localStorage.getItem('speakiq-pro') === '1') setIsPro(true)
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('upgraded') === '1') {
+      localStorage.setItem('speakiq-pro', '1')
+      setIsPro(true)
+      window.history.replaceState({}, '', '/')
+    }
+  }, [])
+
+  const handleUpgrade = useCallback(async () => {
+    setCheckoutLoading(true)
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: '' }),
+      })
+      const data = await res.json()
+      if (data.url) window.location.href = data.url
+    } catch { /* ignore */ } finally {
+      setCheckoutLoading(false)
+    }
+  }, [])
 
   const saveCards = useCallback((cards: Flashcard[]) => {
     setFlashcards(cards)
@@ -433,17 +461,17 @@ export default function Home() {
       />
     )}
     <main className="min-h-screen relative z-10 overflow-x-hidden">
-      {/* Background blobs */}
+      {/* Aurora background — unique to SpeakIQ */}
+      <div className="aurora-orb-1" aria-hidden="true" />
+      <div className="aurora-orb-2" aria-hidden="true" />
+      <div className="aurora-orb-3" aria-hidden="true" />
       <div className="noise-overlay" aria-hidden="true" />
-      <div className="liquid-blob liquid-blob-1" aria-hidden="true" />
-      <div className="liquid-blob liquid-blob-2" aria-hidden="true" />
-      <div className="liquid-blob liquid-blob-3" aria-hidden="true" />
 
       {/* ── Nav ── */}
       <nav className="h-14 flex items-center justify-between px-6 relative z-20 border-b border-white/[0.06] backdrop-blur-xl bg-black/20">
         <div className="flex items-center gap-2.5">
           <span className="text-xl">🌍</span>
-          <span className="font-black text-lg tracking-tight text-white">SpeakFast</span>
+          <span className="font-black text-lg tracking-tight text-white">SpeakIQ</span>
           <span className="pill-glass text-xs font-semibold px-3 py-1 rounded-full hidden sm:inline-flex">AI Language Coach</span>
         </div>
         <button
@@ -456,37 +484,35 @@ export default function Home() {
       </nav>
 
       {/* ── Hero ── */}
-      <section className="min-h-[85vh] flex flex-col items-center justify-center text-center px-4 relative">
-        {/* XP badge */}
-        <div className="badge-3d inline-flex items-center gap-2 px-4 py-2 rounded-full border border-violet-500/40 bg-violet-500/10 text-violet-300 text-xs font-bold mb-6 backdrop-blur-sm">
-          🏆 Level up your language
-        </div>
-
-        {/* XP progress bar */}
-        <div className="w-full max-w-xs mb-6">
-          <div className="flex justify-between text-[10px] text-white/40 mb-1.5 font-medium">
-            <span>Level 7</span>
-            <span>Level 8</span>
-          </div>
-          <div className="h-3 rounded-full bg-gray-800 overflow-hidden">
-            <div
-              className="h-full rounded-full bg-gradient-to-r from-violet-500 to-cyan-500 transition-all duration-1000"
-              style={{ width: '65%' }}
-            />
-          </div>
-          <p className="text-[10px] text-white/30 mt-1 text-center">650 / 1000 XP</p>
+      <section className="min-h-[90vh] flex flex-col items-center justify-center text-center px-4 relative">
+        {/* Value badge */}
+        <div className="badge-3d inline-flex items-center gap-2 px-4 py-2 rounded-full border border-violet-500/40 bg-violet-500/10 text-violet-300 text-xs font-bold mb-6 backdrop-blur-sm streak-pulse">
+          🌍 50+ Languages · AI Native Speaker Tutor · $7/mo
         </div>
 
         {/* Headline */}
-        <h1 className="text-4xl md:text-6xl font-black tracking-tight leading-tight mb-4">
-          Speak any language<br />
-          <span className="text-iridescent">3x faster</span>
+        <h1 className="text-5xl md:text-7xl font-black tracking-tight leading-tight mb-5">
+          Your AI<br />
+          <span className="text-iridescent">language tutor</span><br />
+          <span className="text-white/40">available 24/7</span>
         </h1>
 
-        {/* Subtitle */}
-        <p className="text-white/50 text-base md:text-lg max-w-md mx-auto mb-8">
-          Conversational AI practice with real-time corrections. No boring drills.
+        {/* Value prop */}
+        <p className="text-white/55 text-base md:text-xl max-w-xl mx-auto mb-4 leading-relaxed">
+          Real conversations, instant corrections, automatic flashcards, grammar tracking.<br/>
+          <span className="text-violet-300 font-semibold">Less than a cup of coffee per week.</span>
         </p>
+
+        {/* Social proof */}
+        <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-white/35 mb-8">
+          <span>✓ No boring drills</span>
+          <span className="text-white/15">·</span>
+          <span>✓ 6 practice modes</span>
+          <span className="text-white/15">·</span>
+          <span>✓ Auto flashcard saving</span>
+          <span className="text-white/15">·</span>
+          <span>✓ Daily streak tracking</span>
+        </div>
 
         {/* Language flag cards */}
         <div className="flex gap-3 flex-wrap justify-center mb-8">
@@ -509,16 +535,25 @@ export default function Home() {
           ))}
         </div>
 
-        {/* CTA */}
-        <button
-          onClick={startChat}
-          className="btn-liquid px-8 py-4 rounded-2xl font-black text-lg text-white mb-4"
-          style={{ background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', boxShadow: '0 0 40px rgba(124,58,237,0.5)' }}
-        >
-          Start speaking now →
-        </button>
+        {/* CTA group */}
+        <div className="flex flex-col sm:flex-row gap-3 items-center mb-4">
+          <button
+            onClick={startChat}
+            className="btn-liquid px-8 py-4 rounded-2xl font-black text-lg text-white"
+            style={{ background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', boxShadow: '0 0 40px rgba(124,58,237,0.5)' }}
+          >
+            Start free now →
+          </button>
+          <button
+            onClick={handleUpgrade}
+            disabled={isPro || checkoutLoading}
+            className="px-8 py-4 rounded-2xl font-bold text-base border border-violet-400/30 bg-violet-950/30 text-violet-300 hover:bg-violet-900/40 transition-all disabled:opacity-50"
+          >
+            {isPro ? '✓ Pro active' : 'Go Pro — $7/mo'}
+          </button>
+        </div>
 
-        <p className="text-white/25 text-xs">20 free messages/day · No credit card</p>
+        <p className="text-white/20 text-xs">20 free messages/day · No credit card needed for free plan</p>
       </section>
 
       {/* ── How it works ── */}
@@ -638,17 +673,52 @@ export default function Home() {
         </div>
       </section>
 
+      {/* ── Why upgrade ── */}
+      <section className="px-6 pb-16 max-w-4xl mx-auto">
+        <div className="glass-liquid rounded-2xl p-7 border border-violet-500/10">
+          <div className="text-center mb-6">
+            <h2 className="text-xl font-black text-white mb-1">Why upgrade to Pro?</h2>
+            <p className="text-white/35 text-sm">Language tutors cost $30–80/hr. SpeakIQ Pro = $7/mo unlimited.</p>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            {[
+              { icon: '♾️', title: 'Unlimited practice', desc: 'No daily cap. Practice as much as you want, whenever you want — morning commute or midnight session.', pro: true },
+              { icon: '📊', title: 'Grammar reports', desc: 'See every error you made, corrections explained, with a running score of your improvement over time.', pro: true },
+              { icon: '💾', title: 'Progress saved forever', desc: 'Your streak, flashcards, and grammar history persist across devices. Never lose your progress.', pro: true },
+            ].map(f => (
+              <div key={f.title} className="bg-violet-950/30 border border-violet-500/20 rounded-xl p-5">
+                <div className="flex items-start justify-between mb-2">
+                  <span className="text-2xl">{f.icon}</span>
+                  <span className="text-[9px] bg-violet-500/20 text-violet-400 px-2 py-0.5 rounded font-bold">PRO</span>
+                </div>
+                <h3 className="font-bold text-white text-sm mb-1.5">{f.title}</h3>
+                <p className="text-white/40 text-xs leading-relaxed">{f.desc}</p>
+              </div>
+            ))}
+          </div>
+          <div className="text-center mt-6">
+            <button onClick={handleUpgrade} disabled={isPro || checkoutLoading}
+              className="px-8 py-3 rounded-xl font-bold text-white transition-all disabled:opacity-50"
+              style={{ background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', boxShadow: '0 0 20px rgba(124,58,237,0.3)' }}>
+              {isPro ? '✓ You are on Pro' : (checkoutLoading ? 'Redirecting...' : 'Upgrade to Pro — $7/mo →')}
+            </button>
+            <p className="text-white/20 text-xs mt-2">Cancel anytime · Secure payment via Stripe</p>
+          </div>
+        </div>
+      </section>
+
       {/* ── Pricing ── */}
       <section id="pricing" className="px-6 py-20 border-t border-white/5">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-black mb-2">Simple pricing</h2>
-            <p className="text-white/35 text-sm">20 messages free every day · No credit card</p>
+            <p className="text-white/35 text-sm">20 messages free every day · No credit card needed</p>
+            {isPro && <div className="mt-3 inline-block px-4 py-1.5 bg-violet-950/60 border border-violet-500/40 rounded-full text-sm text-violet-300 font-semibold">⚡ Pro active — unlimited messages</div>}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-px border border-white/10 rounded-2xl overflow-hidden">
             {[
               { name: 'Free', price: '$0', sub: 'forever', features: ['20 messages / day', '50+ languages', '6 session modes', 'Auto flashcard saving', 'Custom vocab lists', 'Daily streak tracking'], cta: 'Start free', highlight: false },
-              { name: 'Pro', price: '$5', sub: '/month', features: ['Unlimited messages', 'Save study progress', 'Grammar report cards', 'Pronunciation feedback', 'Offline flashcards', 'Priority AI speed'], cta: 'Go Pro →', highlight: true },
+              { name: 'Pro', price: '$7', sub: '/month', features: ['Unlimited messages', 'Save study progress', 'Grammar report cards', 'Pronunciation feedback', 'Offline flashcards', 'Priority AI speed'], cta: isPro ? '✓ Active Plan' : (checkoutLoading ? 'Redirecting...' : 'Go Pro — $7/mo →'), highlight: true },
             ].map(plan => (
               <div key={plan.name} className={`p-7 ${plan.highlight ? 'bg-violet-950/40' : 'bg-white/[0.02]'}`}>
                 <div className={`text-xs font-bold uppercase tracking-widest mb-1 ${plan.highlight ? 'text-violet-400' : 'text-white/30'}`}>{plan.name}</div>
@@ -661,7 +731,10 @@ export default function Home() {
                     </li>
                   ))}
                 </ul>
-                <button className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all ${plan.highlight ? 'bg-gradient-to-r from-violet-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400' : 'border border-white/10 text-white/30 cursor-default'}`}>
+                <button
+                  onClick={plan.highlight && !isPro ? handleUpgrade : undefined}
+                  disabled={plan.highlight && (isPro || checkoutLoading)}
+                  className={`w-full py-2.5 rounded-xl text-sm font-bold transition-all ${plan.highlight ? (isPro ? 'bg-violet-950/60 border border-violet-500/30 text-violet-400 cursor-default' : 'bg-gradient-to-r from-violet-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 cursor-pointer') : 'border border-white/10 text-white/30 cursor-default'}`}>
                   {plan.cta}
                 </button>
               </div>
@@ -688,11 +761,11 @@ export default function Home() {
       />
     )}
     <main className="min-h-screen flex flex-col relative z-10">
-      {/* Noise overlay */}
+      {/* Aurora background — unique to SpeakIQ */}
+      <div className="aurora-orb-1" aria-hidden="true" />
+      <div className="aurora-orb-2" aria-hidden="true" />
+      <div className="aurora-orb-3" aria-hidden="true" />
       <div className="noise-overlay" aria-hidden="true" />
-      {/* Ambient orbs — animated, replaces static blur */}
-      <div className="liquid-blob liquid-blob-1" style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.15), transparent 70%)' }} aria-hidden="true" />
-      <div className="liquid-blob liquid-blob-2" style={{ background: 'radial-gradient(circle, rgba(167,139,250,0.10), transparent 70%)', animationDelay: '-9s' }} aria-hidden="true" />
 
       {showCards && <FlashcardDeck cards={langCards.length > 0 ? langCards : flashcards} onClose={() => setShowCards(false)} onAdd={addCardManually} />}
       {showGrammar && <GrammarReport errors={grammarErrors} onClose={() => setShowGrammar(false)} />}
@@ -796,9 +869,14 @@ export default function Home() {
       <div className="border-t border-white/5 bg-black/20 backdrop-blur-xl p-4">
         <div className="max-w-3xl mx-auto">
           {isLimited ? (
-            <div className="text-center py-2 px-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
-              <p className="text-amber-400 text-sm font-semibold">Daily limit reached (20 free messages/day)</p>
-              <a href="#pricing" className="text-xs text-amber-600 hover:text-amber-400 underline">Upgrade for unlimited →</a>
+            <div className="text-center py-3 px-4 rounded-xl border border-violet-500/20 bg-violet-950/30 space-y-2">
+              <p className="text-white/70 text-sm font-semibold">Daily limit reached — 20 free messages used</p>
+              <button onClick={handleUpgrade} disabled={checkoutLoading}
+                className="px-6 py-2 rounded-xl text-sm font-bold text-white transition-all disabled:opacity-50 inline-block"
+                style={{ background: 'linear-gradient(135deg, #7c3aed, #06b6d4)' }}>
+                {checkoutLoading ? 'Redirecting...' : 'Go Pro — $7/mo for unlimited →'}
+              </button>
+              <p className="text-white/20 text-[10px]">Cancel anytime · Secure via Stripe</p>
             </div>
           ) : (
             <div className="flex gap-3">

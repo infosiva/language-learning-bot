@@ -709,3 +709,65 @@ body {
   overflow: hidden;
 }
 .section-liquid > * { position: relative; z-index: 1; }
+
+/* ── SpeakIQ unique: aurora background ── */
+@keyframes aurora1 {
+  0%, 100% { transform: translate(0,0) scale(1); opacity: 0.6 }
+  33% { transform: translate(60px,-40px) scale(1.2); opacity: 0.9 }
+  66% { transform: translate(-40px,30px) scale(0.9); opacity: 0.5 }
+}
+@keyframes aurora2 {
+  0%, 100% { transform: translate(0,0) scale(1.1); opacity: 0.5 }
+  33% { transform: translate(-70px,50px) scale(0.8); opacity: 0.8 }
+  66% { transform: translate(50px,-30px) scale(1.3); opacity: 0.4 }
+}
+@keyframes aurora3 {
+  0%, 100% { transform: translate(0,0) scale(0.9); opacity: 0.4 }
+  50% { transform: translate(30px,60px) scale(1.2); opacity: 0.7 }
+}
+.aurora-orb-1 {
+  position: fixed; top: -200px; left: -100px;
+  width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(124,58,237,0.25) 0%, transparent 70%);
+  filter: blur(60px);
+  animation: aurora1 12s ease-in-out infinite;
+  pointer-events: none; z-index: 0;
+}
+.aurora-orb-2 {
+  position: fixed; top: 30%; right: -150px;
+  width: 500px; height: 500px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(14,165,233,0.20) 0%, transparent 70%);
+  filter: blur(80px);
+  animation: aurora2 15s ease-in-out infinite;
+  pointer-events: none; z-index: 0;
+}
+.aurora-orb-3 {
+  position: fixed; bottom: -100px; left: 30%;
+  width: 450px; height: 450px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(236,72,153,0.15) 0%, transparent 70%);
+  filter: blur(70px);
+  animation: aurora3 10s ease-in-out infinite;
+  pointer-events: none; z-index: 0;
+}
+
+/* ── SpeakIQ: floating language letters ── */
+@keyframes floatLetter {
+  0% { transform: translateY(0) rotate(0deg); opacity: 0; }
+  10% { opacity: 0.15; }
+  90% { opacity: 0.08; }
+  100% { transform: translateY(-100vh) rotate(20deg); opacity: 0; }
+}
+
+/* ── SpeakIQ: streak pulse ── */
+@keyframes streakPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(251,146,60,0.5) }
+  50% { box-shadow: 0 0 0 8px rgba(251,146,60,0) }
+}
+.streak-pulse { animation: streakPulse 2s ease-in-out infinite; }
+
+/* ── SpeakIQ: message slide in ── */
+@keyframes msgSlide {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.msg-slide { animation: msgSlide 0.3s ease-out forwards; }
