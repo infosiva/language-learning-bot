@@ -3,6 +3,13 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useGate } from '@/lib/shared/useGate'
 import RegisterGate from '@/lib/shared/RegisterGate'
 import { StreakBadge, ProgressRing, XpBar } from '@/components/design'
+import { HeartsDisplay } from '@/components/gamification'
+import GuidedTour, { type TourStep } from '@/components/GuidedTour'
+
+const SPEAKIQ_TOUR: TourStep[] = [
+  { target: '#hero-start-btn', title: 'Start learning free', icon: '🌍', body: 'Pick a language, set your level, and start chatting with your AI tutor instantly. No account needed.', placement: 'bottom' },
+  { target: '#pricing', title: 'Go unlimited', icon: '⚡', body: 'Pro unlocks unlimited sessions, grammar reports, and progress saved forever.', placement: 'top' },
+]
 
 // ── Streak helpers ────────────────────────────────────────────
 function useStreak() {
@@ -476,6 +483,7 @@ export default function Home() {
           <span className="pill-glass text-xs font-semibold px-3 py-1 rounded-full hidden sm:inline-flex">AI Language Coach</span>
         </div>
         <button
+          id="hero-start-btn"
           onClick={startChat}
           className="btn-liquid px-4 py-2 rounded-full text-sm font-bold text-white"
           style={{ background: 'linear-gradient(135deg, #7c3aed, #a855f7)', boxShadow: '0 0 18px rgba(124,58,237,0.4)' }}
@@ -518,6 +526,7 @@ export default function Home() {
         {/* Your Progress — gamification strip */}
         <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
           <StreakBadge count={currentStreak > 0 ? currentStreak : 7} />
+          <HeartsDisplay />
           <XpBar current={340} max={500} level={5} className="max-w-xs" />
           <ProgressRing progress={68} label="fluency" />
         </div>
@@ -907,6 +916,7 @@ export default function Home() {
           )}
         </div>
       </div>
+      <GuidedTour steps={SPEAKIQ_TOUR} storageKey="speakiq_tour_v1" accentColor="#7c3aed" />
     </main>
     </>
   )
