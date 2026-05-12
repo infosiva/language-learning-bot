@@ -13,14 +13,17 @@ interface Props {
 
 declare global {
   interface Window {
-    SpeechRecognition: typeof SpeechRecognition
-    webkitSpeechRecognition: typeof SpeechRecognition
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    SpeechRecognition: any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    webkitSpeechRecognition: any
   }
 }
 
 export default function VoiceButton({ onTranscript, lang = 'en-GB', color = '#f59e0b', position = 'bottom-right' }: Props) {
   const [state, setState] = useState<State>('idle')
-  const recRef = useRef<SpeechRecognition | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const recRef = useRef<any>(null)
 
   const posClass = {
     'bottom-right': 'bottom-6 right-6',
@@ -43,21 +46,22 @@ export default function VoiceButton({ onTranscript, lang = 'en-GB', color = '#f5
     rec.interimResults = false
     rec.maxAlternatives = 1
     rec.onstart = () => setState('listening')
-    rec.onresult = (e) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rec.onresult = (e: any) => {
       setState('processing')
       const text = e.results[0][0].transcript
       onTranscript(text)
       setTimeout(() => setState('idle'), 800)
     }
     rec.onerror = () => { setState('error'); setTimeout(() => setState('idle'), 1500) }
-    rec.onend = () => { if (state === 'listening') setState('idle') }
+    rec.onend = () => { setState((s: State) => s === 'listening' ? 'idle' : s) }
     rec.start()
     recRef.current = rec
   }, [state, isSupported, lang, onTranscript])
 
   if (!isSupported) return null
 
-  const icons = {
+  const icons: Record<State, React.ReactNode> = {
     idle: <Mic size={22} />,
     listening: <MicOff size={22} />,
     processing: <Loader2 size={22} className="animate-spin" />,
@@ -65,17 +69,16 @@ export default function VoiceButton({ onTranscript, lang = 'en-GB', color = '#f5
     unsupported: null,
   }
 
-  const tooltip = {
-    idle: 'Voice search (en-GB)',
+  const tooltip: Record<State, string> = {
+    idle: 'Voice input',
     listening: 'Listening… click to stop',
     processing: 'Processing…',
     error: 'Tap to retry',
     unsupported: '',
-  }[state]
+  }
 
   return (
     <div className={`fixed ${posClass} z-50 group`}>
-      {/* Ripple rings when listening */}
       {state === 'listening' && (
         <>
           <span className="absolute inset-0 rounded-full animate-ping opacity-30" style={{ background: color }} />
@@ -84,7 +87,7 @@ export default function VoiceButton({ onTranscript, lang = 'en-GB', color = '#f5
       )}
       <button
         onClick={toggle}
-        title={tooltip}
+        title={tooltip[state]}
         data-state={state}
         className="relative w-14 h-14 rounded-full text-white flex items-center justify-center shadow-2xl transition-all duration-200 hover:scale-110 active:scale-95"
         style={{
@@ -93,9 +96,8 @@ export default function VoiceButton({ onTranscript, lang = 'en-GB', color = '#f5
         }}>
         {icons[state]}
       </button>
-      {/* Tooltip */}
       <div className="absolute bottom-full right-0 mb-2 px-2.5 py-1.5 bg-[#1a1830] text-white/80 text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-white/[0.08]">
-        {tooltip}
+        {tooltip[state]}
       </div>
     </div>
   )

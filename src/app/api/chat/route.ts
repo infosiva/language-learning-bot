@@ -5,7 +5,15 @@ const TECH_LANGS = ['Python', 'JavaScript', 'SQL', 'Prompt Engineering', 'AI Con
 
 // ── Deep level specs — used in both tech and language interviews ──────────────
 
-const TECH_INTERVIEW_SPEC: Record<string, Record<string, string>> = {
+interface TechLevelSpec {
+  depth: string
+  topics: Record<string, string>
+  questionStyle: string
+  scoring: string
+  feedbackDepth: string
+}
+
+const TECH_INTERVIEW_SPEC: Record<string, TechLevelSpec> = {
   Beginner: {
     depth: 'foundational — no tricks, no edge cases',
     topics: {
@@ -28,7 +36,7 @@ const TECH_INTERVIEW_SPEC: Record<string, Record<string, string>> = {
       'Prompt Engineering': 'chain-of-thought, ReAct pattern, system vs user message, context window limits, prompt injection risks, structured output (JSON mode), RAG concept',
       'AI Concepts': 'overfitting/underfitting, train/val/test split, precision/recall/F1, gradient descent intuition, embeddings, transformers at high level, fine-tuning vs prompting',
     },
-    questionStyle: 'Given this code snippet, what's wrong? Write a function that handles X edge case. Explain the difference between A and B with an example.',
+    questionStyle: "Given this code snippet, what's wrong? Write a function that handles X edge case. Explain the difference between A and B with an example.",
     scoring: 'Partial credit for correct approach with syntax errors. −2 for logical errors. Score out of 10.',
     feedbackDepth: 'Show corrected code block, explain the gotcha, give 1 follow-up tip to deepen understanding.',
   },
@@ -105,7 +113,7 @@ Calibrate every question to this profile. If they listed React in skills, probe 
 
   if (isTech) {
     const spec = TECH_INTERVIEW_SPEC[level] ?? TECH_INTERVIEW_SPEC.Intermediate
-    const topicList = (spec.topics as Record<string, string>)[language] ?? 'core concepts'
+    const topicList = spec.topics[language] ?? 'core concepts'
 
     // Behavioural/mixed override for question style
     const effectiveStyle = interviewTypeCtx === 'behavioural'
