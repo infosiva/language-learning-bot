@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useGate } from '@/lib/shared/useGate'
 import RegisterGate from '@/lib/shared/RegisterGate'
 import { StreakBadge } from '@/components/design'
+import { HeartsDisplay } from '@/components/gamification'
 import GuidedTour, { type TourStep } from '@/components/GuidedTour'
 
 const SPEAKIQ_TOUR: TourStep[] = [
@@ -552,12 +553,11 @@ export default function Home() {
               <span className="text-violet-300 font-semibold">Less than a cup of coffee per week.</span>
             </p>
 
-            {/* Streak badge */}
-            {currentStreak > 0 && (
-              <div className="mb-5">
-                <StreakBadge count={currentStreak} />
-              </div>
-            )}
+            {/* Gamification strip */}
+            <div className="flex items-center gap-3 mb-5">
+              {currentStreak > 0 && <StreakBadge count={currentStreak} />}
+              <HeartsDisplay />
+            </div>
 
             {/* Stats row */}
             <div className="grid grid-cols-4 gap-2 mb-6">

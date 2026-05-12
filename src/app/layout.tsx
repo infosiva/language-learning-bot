@@ -12,7 +12,14 @@ const brand: BrandConfig = {
   icon: '🗣️',
   color: '#f97316',
   url: 'https://speakiq.app',
-  navLinks: [{ label: 'Learn', href: '/' }, { label: 'Lesson', href: '/lesson' }, { label: 'My Path', href: '/path' }],
+  navLinks: [
+    { label: 'Learn', href: '/' },
+    { label: 'Lesson', href: '/lesson' },
+    { label: 'My Path', href: '/path' },
+    { label: 'Daily', href: '/daily' },
+    { label: 'Badges', href: '/badges' },
+    { label: 'Word Bank', href: '/wordbank' },
+  ],
   cta: { label: 'Learn free →', href: '/' },
 }
 
