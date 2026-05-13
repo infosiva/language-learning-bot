@@ -327,6 +327,7 @@ export default function Home() {
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
+  const [streamingContent, setStreamingContent] = useState('')
   const [wordCount, setWordCount] = useState(0)
   const [flashcards, setFlashcards] = useState<Flashcard[]>(() => {
     if (typeof window === 'undefined') return []
@@ -348,6 +349,7 @@ export default function Home() {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [streamingContent])
 
   useEffect(() => {
     if (typeof window === 'undefined') return
@@ -461,22 +463,68 @@ export default function Home() {
     const newMsgs: Message[] = [...messages, { role: 'user', content: userMsg }]
     setMessages(newMsgs)
     setLoading(true)
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: userMsg, language, native, level, mode, history: messages, interviewProfile: mode === 'interview' ? interviewProfile : null }),
-    })
-    const data = await res.json()
-    const reply = data.reply
-    setMessages([...newMsgs, { role: 'assistant', content: reply }])
-    setWordCount(w => w + userMsg.split(' ').length)
-    addWordsFromMessage(reply)
-    addGrammarFromMessage(reply)
-    // Deduct heart on wrong quiz answers
-    if ((mode === 'quiz' || mode === 'interview') && /incorrect|wrong|❌/i.test(reply)) {
-      loseHeart()
+    setStreamingContent('')
+
+    try {
+      const res = await fetch('/api/chat-stream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMsg, language, native, level, mode, history: messages, interviewProfile: mode === 'interview' ? interviewProfile : null }),
+      })
+
+      if (!res.ok || !res.body) throw new Error('stream failed')
+
+      const reader = res.body.getReader()
+      const decoder = new TextDecoder()
+      let buf = ''
+      let reply = ''
+      setLoading(false)
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buf += decoder.decode(value, { stream: true })
+        const lines = buf.split('\n')
+        buf = lines.pop() ?? ''
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          const data = line.slice(6).trim()
+          if (data === '[DONE]') continue
+          try {
+            const token: string = JSON.parse(data)
+            reply += token
+            setStreamingContent(reply)
+          } catch { /* skip malformed */ }
+        }
+      }
+
+      setStreamingContent('')
+      setMessages([...newMsgs, { role: 'assistant', content: reply }])
+      setWordCount(w => w + userMsg.split(' ').length)
+      addWordsFromMessage(reply)
+      addGrammarFromMessage(reply)
+      if ((mode === 'quiz' || mode === 'interview') && /incorrect|wrong|❌/i.test(reply)) {
+        loseHeart()
+      }
+    } catch {
+      // Fallback to non-streaming
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: userMsg, language, native, level, mode, history: messages, interviewProfile: mode === 'interview' ? interviewProfile : null }),
+      })
+      const data = await res.json()
+      const reply = data.reply
+      setStreamingContent('')
+      setMessages([...newMsgs, { role: 'assistant', content: reply }])
+      setWordCount(w => w + userMsg.split(' ').length)
+      addWordsFromMessage(reply)
+      addGrammarFromMessage(reply)
+      if ((mode === 'quiz' || mode === 'interview') && /incorrect|wrong|❌/i.test(reply)) {
+        loseHeart()
+      }
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   const modeObj = MODES.find(m => m.id === mode)
@@ -879,7 +927,15 @@ export default function Home() {
               </div>
             </div>
           ))}
-          {loading && (
+          {streamingContent && (
+            <div className="flex justify-start">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-sm mr-3 flex-shrink-0 mt-0.5">✦</div>
+              <div className="max-w-[82%] rounded-2xl rounded-tl-sm px-5 py-3.5 text-sm leading-relaxed whitespace-pre-wrap bg-white/[0.05] border border-white/[0.08] text-white/90">
+                {streamingContent}<span className="inline-block w-0.5 h-4 bg-violet-400 ml-0.5 animate-pulse align-text-bottom" />
+              </div>
+            </div>
+          )}
+          {loading && !streamingContent && (
             <div className="flex justify-start">
               <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-sm mr-3 flex-shrink-0">✦</div>
               <div className="bg-white/[0.05] border border-white/[0.08] rounded-2xl rounded-tl-sm px-5 py-4 flex gap-1.5">
