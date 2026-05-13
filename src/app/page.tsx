@@ -517,26 +517,14 @@ export default function Home() {
 
       {showCards && <FlashcardDeck cards={flashcards} onClose={() => setShowCards(false)} onAdd={addCardManually} />}
 
-      {/* ── Nav ── */}
-      <nav className="sticky top-0 z-50 border-b border-white/[0.06] backdrop-blur-xl bg-black/20">
-        <div className="max-w-5xl mx-auto px-5 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-base shadow-lg shadow-violet-500/30">🗣️</div>
-            <span className="font-black text-sm tracking-tight">SpeakIQ</span>
-          </div>
-          <div className="flex items-center gap-2">
-            {flashcards.length > 0 && (
-              <button onClick={() => setShowCards(true)} className="pill-glass text-xs text-violet-300 px-3 py-1.5 rounded-full hover:bg-violet-500/20 transition-all">
-                📇 {flashcards.length}
-              </button>
-            )}
-            <button onClick={handleUpgrade} disabled={isPro || checkoutLoading}
-              className="px-4 py-1.5 rounded-full text-xs font-bold border border-violet-400/30 bg-violet-950/40 text-violet-300 hover:bg-violet-900/50 transition-all disabled:opacity-50">
-              {isPro ? '✓ Pro' : 'Go Pro — $7/mo'}
-            </button>
-          </div>
+      {/* ── Flashcard quick-access (setup screen only) ── */}
+      {flashcards.length > 0 && (
+        <div className="max-w-5xl mx-auto px-5 pt-4 flex justify-end">
+          <button onClick={() => setShowCards(true)} className="pill-glass text-xs text-violet-300 px-3 py-1.5 rounded-full hover:bg-violet-500/20 transition-all">
+            📇 {flashcards.length}
+          </button>
         </div>
-      </nav>
+      )}
 
       {/* ── Hero + Setup — single viewport ── */}
       <section className="max-w-5xl mx-auto px-5 pt-10 pb-8 relative">
