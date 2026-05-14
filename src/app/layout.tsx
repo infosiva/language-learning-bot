@@ -15,8 +15,8 @@ const brand: BrandConfig = {
   url: 'https://speakiq.app',
   navLinks: [
     { label: 'Learn', href: '/' },
+    { label: 'Dashboard', href: '/dashboard' },
     { label: 'Lesson', href: '/lesson' },
-    { label: 'Converse', href: '/converse' },
     { label: 'My Path', href: '/path' },
     { label: 'Daily', href: '/daily' },
     { label: 'Badges', href: '/badges' },
