@@ -425,6 +425,7 @@ export default function Home() {
     interviewType: 'technical', // technical | behavioural | language-proficiency | mixed
   })
   const bottomRef = useRef<HTMLDivElement>(null)
+  const interviewSetupRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [messages])
   useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [streamingContent])
@@ -864,7 +865,7 @@ export default function Home() {
                 <label className="text-[10px] text-white/35 uppercase tracking-wider mb-2 block">Session type</label>
                 <div className="grid grid-cols-2 gap-1.5">
                   {MODES.map(m => (
-                    <button key={m.id} onClick={() => setMode(m.id)}
+                    <button key={m.id} onClick={() => { setMode(m.id); if (m.id === 'interview') setTimeout(() => interviewSetupRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 50) }}
                       className={`p-2.5 rounded-xl text-left transition-all flex items-center gap-2 ${mode === m.id ? 'bg-violet-600/30 border-2 border-violet-400/70' : m.id === 'interview' ? 'bg-amber-500/5 border border-amber-500/20 hover:bg-amber-500/10' : 'bg-white/[0.03] border border-white/8 hover:bg-white/[0.07] hover:border-white/20'}`}>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-1">
@@ -883,7 +884,7 @@ export default function Home() {
 
               {/* Interview profile — collapsed form */}
               {mode === 'interview' && (
-                <div className="rounded-xl border border-amber-500/25 bg-amber-500/5 p-4 space-y-3">
+                <div ref={interviewSetupRef} className="rounded-xl border border-amber-500/25 bg-amber-500/5 p-4 space-y-3">
                   <div className="flex items-center gap-2">
                     <span className="text-amber-300 text-xs font-bold">🎤 Interview Setup</span>
                     <span className="text-[9px] text-white/25">more context = more realistic</span>
