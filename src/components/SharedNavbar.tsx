@@ -39,14 +39,15 @@ export default function SharedNavbar({ brand }: { brand: BrandConfig }) {
       >
         <div className="max-w-5xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group select-none">
+          <Link href="/" className="flex items-center gap-2 group select-none">
             <span
-              className="text-2xl leading-none transition-transform duration-200 group-hover:scale-110"
+              className="w-8 h-8 rounded-xl flex items-center justify-center leading-none transition-transform duration-200 group-hover:scale-110 shrink-0 font-black text-white"
+              style={{ background: `${brand.color}30`, boxShadow: `0 0 0 1px ${brand.color}40`, fontSize: brand.icon.length <= 2 ? '11px' : '18px' }}
               aria-hidden
             >
               {brand.icon}
             </span>
-            <span className="font-bold text-white text-base tracking-tight">
+            <span className="font-bold text-white text-base tracking-tight leading-none">
               {brand.name}
             </span>
           </Link>
@@ -111,8 +112,11 @@ export default function SharedNavbar({ brand }: { brand: BrandConfig }) {
         >
           <div className="px-5 pt-5 pb-4 flex items-center justify-between border-b border-white/[0.05]">
             <Link href="/" onClick={() => setOpen(false)} className="flex items-center gap-2">
-              <span className="text-lg">{brand.icon}</span>
-              <span className="font-semibold text-white/90 text-sm">{brand.name}</span>
+              <span
+                className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 font-black text-white"
+                style={{ background: `${brand.color}30`, fontSize: brand.icon.length <= 2 ? '10px' : '16px' }}
+              >{brand.icon}</span>
+              <span className="font-semibold text-white/90 text-sm leading-none">{brand.name}</span>
             </Link>
             <button onClick={() => setOpen(false)} className="p-1.5 text-white/40 hover:text-white/80 transition-colors">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>

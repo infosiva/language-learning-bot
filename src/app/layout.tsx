@@ -10,8 +10,8 @@ import CookieConsent from "../../components/CookieConsent";
 const brand: BrandConfig = {
   name: 'SpeakIQ',
   tagline: 'AI language tutor — conversational lessons tailored to your level and goals.',
-  icon: '🗣️',
-  color: '#f97316',
+  icon: 'SQ',
+  color: '#7c3aed',
   url: 'https://speakiq.app',
   navLinks: [
     { label: 'Learn', href: '/' },

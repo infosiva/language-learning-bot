@@ -623,7 +623,7 @@ export default function Home() {
         onDismiss={dismissGate}
       />
     )}
-    <main className="min-h-screen relative z-10 overflow-x-hidden">
+    <main className="min-h-screen relative z-10 overflow-x-hidden flex flex-col">
       {/* ── Background system ── */}
       {/* Fixed dot-grid pattern */}
       <div className="fixed inset-0 pointer-events-none z-0" style={{
@@ -654,7 +654,7 @@ export default function Home() {
       )}
 
       {/* ── Hero + Setup — single viewport ── */}
-      <section className="max-w-5xl mx-auto px-5 pt-4 sm:pt-10 pb-8 relative">
+      <section className="flex-1 max-w-5xl w-full mx-auto px-5 pt-4 sm:pt-10 pb-8 relative">
         {/* Two-column layout: setup first on mobile, hero left on desktop */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
 
@@ -755,6 +755,15 @@ export default function Home() {
 
           {/* Right: setup panel — shown first on mobile */}
           <div className="order-1 lg:order-2 flex flex-col">
+            {/* Mobile-only intro header — shown above setup panel on small screens */}
+            <div className="lg:hidden mb-4">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="w-8 h-8 rounded-xl flex items-center justify-center font-black text-white text-[11px] shrink-0"
+                  style={{ background: '#7c3aed30', boxShadow: '0 0 0 1px #7c3aed40' }}>SQ</span>
+                <span className="font-black text-white text-lg tracking-tight">SpeakIQ</span>
+              </div>
+              <p className="text-sm text-white/50 leading-snug">AI tutor for 50+ languages. Pick your language and start a conversation — free, no account needed.</p>
+            </div>
             <div className="glass-liquid rounded-2xl p-6 space-y-5 flex-1" style={{ boxShadow: '0 0 60px rgba(139,92,246,0.15)' }}>
               <div className="flex items-center justify-between">
                 <h2 className="font-black text-base text-white">Configure your session</h2>
@@ -913,8 +922,8 @@ export default function Home() {
         </div>
       )}
 
-      <nav className="border-b border-white/8 backdrop-blur-xl bg-white/[0.02] sticky top-14 z-40 shrink-0">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 h-12 flex items-center justify-between gap-2">
+      <nav className="border-b border-white/8 backdrop-blur-xl bg-white/[0.02] shrink-0">
+        <div className="max-w-3xl mx-auto px-3 sm:px-6 h-12 flex items-center justify-between gap-2 overflow-hidden">
           {/* Left: language + mode info */}
           <div className="flex items-center gap-2 min-w-0">
             <div className="w-6 h-6 rounded-md bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-xs shadow-md shadow-violet-500/30 shrink-0">✦</div>
@@ -1000,8 +1009,8 @@ export default function Home() {
 
       {/* Quick prompts */}
       {messages.length > 0 && messages.length < 10 && (
-        <div className="border-t border-white/5 bg-black/10 shrink-0 py-2">
-          <div className="flex gap-2 overflow-x-auto px-4 pb-1 scrollbar-none" style={{ scrollbarWidth: 'none' }}>
+        <div className="border-t border-white/5 bg-black/10 shrink-0 py-2 overflow-hidden w-full">
+          <div className="flex gap-2 overflow-x-auto px-4 pb-1" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}>
             {(mode === 'vocabulary'
               ? ['Teach me 5 more words', 'Give me example sentences', 'Quiz me on these words', 'Teach me numbers 1-10']
               : ['How do I say "thank you"?', 'Correct my last message', 'Give me a quiz', 'Tell me something interesting']
