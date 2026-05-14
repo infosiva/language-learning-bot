@@ -63,8 +63,30 @@ const MODES = [
   { id: 'quiz', label: '🎯 Quiz me', desc: 'Test what you know' },
   { id: 'translate', label: '🔄 Translate', desc: 'Back-and-forth translation' },
   { id: 'story', label: '📖 Story', desc: 'Learn through interactive stories' },
-  { id: 'interview', label: '🎤 Mock Interview', desc: 'Real interview — AI grades every answer' },
+  { id: 'roleplay', label: '🎭 Roleplay', desc: 'Real-life scenario practice' },
 ]
+
+const ROLEPLAY_SCENARIOS = [
+  { id: 'restaurant', emoji: '🍽️', title: 'Order at a restaurant', prompt: 'Play the waiter. I will order food and drinks. Correct my language naturally mid-conversation.' },
+  { id: 'airport', emoji: '✈️', title: 'Navigate an airport', prompt: 'Play airport staff. I am a traveller checking in, going through security, finding my gate. Keep it realistic.' },
+  { id: 'shopping', emoji: '🛍️', title: 'Go shopping', prompt: 'Play a shop assistant. I am buying clothes. Help me learn prices, sizes, and polite phrases.' },
+  { id: 'hotel', emoji: '🏨', title: 'Check into a hotel', prompt: 'Play the hotel receptionist. I am checking in and asking about facilities. Correct any mistakes gently.' },
+  { id: 'doctor', emoji: '🏥', title: 'Doctor appointment', prompt: 'Play a doctor. I am a patient describing symptoms. Teach me medical vocabulary naturally.' },
+  { id: 'date', emoji: '☕', title: 'First date / coffee', prompt: 'Play someone I just met for coffee. Have a natural getting-to-know-you conversation. Correct errors after each exchange.' },
+  { id: 'negotiate', emoji: '💼', title: 'Negotiate at a market', prompt: 'Play a market vendor. I want to haggle and buy something. Teach me bargaining phrases.' },
+  { id: 'emergency', emoji: '🚨', title: 'Handle an emergency', prompt: 'Play emergency services. I need to report a problem. Teach me urgent, essential phrases.' },
+]
+
+const DAILY_PHRASES: Record<string, { phrase: string; pronunciation: string; meaning: string; example: string }> = {
+  Spanish: { phrase: 'Me alegra verte', pronunciation: 'meh ah-LEH-grah VEHR-teh', meaning: 'I\'m glad to see you', example: '¡Hola María! Me alegra verte.' },
+  French: { phrase: 'Ça me fait plaisir', pronunciation: 'sah muh feh pleh-ZEER', meaning: 'That pleases me / My pleasure', example: 'Merci beaucoup! Ça me fait plaisir.' },
+  German: { phrase: 'Das freut mich', pronunciation: 'dahs froyt mikh', meaning: 'That makes me happy / I\'m glad', example: 'Schön, dich zu sehen. Das freut mich.' },
+  Japanese: { phrase: 'お疲れ様です', pronunciation: 'o-tsu-ka-re-sa-ma-de-su', meaning: 'Good work / Thank you for your effort', example: 'Used when finishing work with colleagues.' },
+  Mandarin: { phrase: '随便', pronunciation: 'suí biàn', meaning: 'As you like / Up to you', example: '你想吃什么？随便！' },
+  Italian: { phrase: 'In bocca al lupo', pronunciation: 'een BOK-kah al LOO-poh', meaning: 'Good luck (lit. "in the wolf\'s mouth")', example: 'Said before exams or performances.' },
+  Korean: { phrase: '잘 부탁드립니다', pronunciation: 'jal bu-tak-deu-rim-ni-da', meaning: 'Please take care of me / I\'m in your hands', example: 'Said when starting a new job or meeting.' },
+  Arabic: { phrase: 'إن شاء الله', pronunciation: 'in-SHA-allah', meaning: 'God willing / Hopefully', example: 'سأكون هناك إن شاء الله.' },
+}
 
 interface Message { role: 'user' | 'assistant'; content: string }
 interface Flashcard { word: string; translation: string; language: string; example?: string; addedAt: string }
@@ -416,14 +438,7 @@ export default function Home() {
   const [showSavePrompt, setShowSavePrompt] = useState(false)
   const [savePromptShown, setSavePromptShown] = useState(false)
   const [lastSessionSummary, setLastSessionSummary] = useState<{ exchanges: number; xp: number; lang: string; words: number } | null>(null)
-  const [interviewProfile, setInterviewProfile] = useState({
-    jobTitle: '',
-    jobDescription: '',
-    targetCompany: '',
-    yearsExp: '',
-    skills: '',
-    interviewType: 'technical', // technical | behavioural | language-proficiency | mixed
-  })
+  const [selectedScenario, setSelectedScenario] = useState<typeof ROLEPLAY_SCENARIOS[0] | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const interviewSetupRef = useRef<HTMLDivElement>(null)
 
@@ -543,11 +558,8 @@ export default function Home() {
     const newStreak = bump()
     setCurrentStreak(newStreak)
     let greeting: string
-    if (mode === 'interview') {
-      const { jobTitle, targetCompany, yearsExp, interviewType } = interviewProfile
-      const roleContext = jobTitle ? `I am applying for a ${jobTitle}${targetCompany ? ` role at ${targetCompany}` : ''}` : ''
-      const expContext = yearsExp ? `, with ${yearsExp} years of experience` : ''
-      greeting = `${roleContext}${expContext}. Start my ${level}-level ${interviewType} interview now. Conduct the entire interview in English only.`
+    if (mode === 'roleplay' && selectedScenario) {
+      greeting = `We are doing a ${language} roleplay. Scenario: ${selectedScenario.prompt} Speak naturally in ${language}. After each of my turns, give a brief correction if I made an error. Start the scene now.`
     } else if (isTechLang) {
       greeting = `Hi! I want to learn ${language}. Start with a friendly introduction and give me my first lesson.`
     } else {
@@ -556,7 +568,7 @@ export default function Home() {
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: greeting, language: mode === 'interview' ? 'English' : language, native, level, mode, history: [], interviewProfile: mode === 'interview' ? interviewProfile : null }),
+      body: JSON.stringify({ message: greeting, language, native, level, mode, history: [] }),
     })
     const data = await res.json()
     const reply = data.reply
@@ -581,7 +593,7 @@ export default function Home() {
       const res = await fetch('/api/chat-stream', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMsg, language: mode === 'interview' ? 'English' : language, native, level, mode, history: messages, interviewProfile: mode === 'interview' ? interviewProfile : null }),
+        body: JSON.stringify({ message: userMsg, language, native, level, mode, history: messages }),
       })
 
       if (!res.ok || !res.body) throw new Error('stream failed')
@@ -630,7 +642,7 @@ export default function Home() {
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMsg, language: mode === 'interview' ? 'English' : language, native, level, mode, history: messages, interviewProfile: mode === 'interview' ? interviewProfile : null }),
+        body: JSON.stringify({ message: userMsg, language, native, level, mode, history: messages }),
       })
       const data = await res.json()
       const reply = data.reply
@@ -882,39 +894,31 @@ export default function Home() {
                 </div>
               </div>
 
-              {/* Interview profile — collapsed form */}
-              {mode === 'interview' && (
-                <div ref={interviewSetupRef} className="rounded-xl border border-amber-500/25 bg-amber-500/5 p-4 space-y-3">
-                  <div className="flex items-center gap-2">
-                    <span className="text-amber-300 text-xs font-bold">🎤 Interview Setup</span>
-                    <span className="text-[9px] text-white/25">more context = more realistic</span>
+              {/* Roleplay scenario picker */}
+              {mode === 'roleplay' && (
+                <div ref={interviewSetupRef} className="rounded-xl border border-violet-500/25 bg-violet-500/5 p-3 space-y-2">
+                  <span className="text-violet-300 text-xs font-bold block">🎭 Pick a scenario</span>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {ROLEPLAY_SCENARIOS.map(s => (
+                      <button key={s.id} onClick={() => setSelectedScenario(s)}
+                        className={`flex items-center gap-2 p-2 rounded-lg text-left transition-all border text-xs ${selectedScenario?.id === s.id ? 'bg-violet-600/30 border-violet-400/60 text-white' : 'bg-white/[0.03] border-white/8 text-white/60 hover:bg-white/[0.07] hover:text-white'}`}>
+                        <span className="text-base shrink-0">{s.emoji}</span>
+                        <span className="font-medium leading-tight">{s.title}</span>
+                      </button>
+                    ))}
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input value={interviewProfile.jobTitle} onChange={e => setInterviewProfile(p => ({ ...p, jobTitle: e.target.value }))}
-                      placeholder="Job title / role"
-                      className="w-full bg-white/[0.03] border border-white/8 rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500/40 transition-all placeholder-white/20" />
-                    <input value={interviewProfile.targetCompany} onChange={e => setInterviewProfile(p => ({ ...p, targetCompany: e.target.value }))}
-                      placeholder="Target company"
-                      className="w-full bg-white/[0.03] border border-white/8 rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500/40 transition-all placeholder-white/20" />
-                    <input value={interviewProfile.yearsExp} onChange={e => setInterviewProfile(p => ({ ...p, yearsExp: e.target.value }))}
-                      placeholder="Years of experience"
-                      className="w-full bg-white/[0.03] border border-white/8 rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500/40 transition-all placeholder-white/20" />
-                    <select value={interviewProfile.interviewType} onChange={e => setInterviewProfile(p => ({ ...p, interviewType: e.target.value }))}
-                      className="w-full bg-black/40 border border-white/8 rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500/40 transition-all">
-                      <option value="technical">💻 Technical</option>
-                      <option value="behavioural">🧠 Behavioural (STAR)</option>
-                      <option value="mixed">⚡ Mixed</option>
-                      <option value="system-design">🏗️ System Design</option>
-                      <option value="language-proficiency">🌍 Language Proficiency</option>
-                    </select>
+                </div>
+              )}
+
+              {/* Daily phrase widget */}
+              {DAILY_PHRASES[language] && mode !== 'roleplay' && (
+                <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/5 p-3">
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-cyan-300 text-[10px] font-bold uppercase tracking-wider">📅 Phrase of the day</span>
                   </div>
-                  <input value={interviewProfile.skills} onChange={e => setInterviewProfile(p => ({ ...p, skills: e.target.value }))}
-                    placeholder="Key skills: React, TypeScript, SQL..."
-                    className="w-full bg-white/[0.03] border border-white/8 rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500/40 transition-all placeholder-white/20" />
-                  <textarea value={interviewProfile.jobDescription} onChange={e => setInterviewProfile(p => ({ ...p, jobDescription: e.target.value }))}
-                    placeholder="Paste job description for ultra-precise questions (optional)..."
-                    rows={2}
-                    className="w-full bg-white/[0.03] border border-white/8 rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none focus:border-amber-500/40 transition-all placeholder-white/20 resize-none" />
+                  <p className="text-white font-bold text-sm mb-0.5">{DAILY_PHRASES[language].phrase}</p>
+                  <p className="text-cyan-300/70 text-[10px] mb-1">/{DAILY_PHRASES[language].pronunciation}/</p>
+                  <p className="text-white/50 text-[10px]">{DAILY_PHRASES[language].meaning}</p>
                 </div>
               )}
 
@@ -932,7 +936,7 @@ export default function Home() {
               <button id="hero-start-btn" onClick={startChat}
                 className="btn-liquid w-full py-3.5 rounded-xl font-black text-sm text-white transition-all justify-center"
                 style={{ background: 'linear-gradient(135deg, #7c3aed, #06b6d4)', boxShadow: '0 0 30px rgba(124,58,237,0.35)' }}>
-                Start {modeObj?.label || '💬 Conversation'} {mode === 'interview' ? 'in English' : `in ${language}`} →
+                Start {modeObj?.label || '💬 Conversation'} in {language} →
               </button>
 
               <p className="text-center text-[10px] text-white/20">20 free messages/day · No credit card needed</p>
@@ -943,7 +947,7 @@ export default function Home() {
 
       {/* ── Minimal footer ── */}
       <footer className="border-t border-white/[0.05] px-5 py-6 text-center text-[11px] text-white/20">
-        SpeakIQ · AI language & interview coaching · <button onClick={handleUpgrade} disabled={isPro} className="text-violet-400/50 hover:text-violet-400 transition-colors disabled:opacity-50">Upgrade to Pro $7/mo</button>
+        SpeakIQ · AI language tutor · 50+ languages · <button onClick={handleUpgrade} disabled={isPro} className="text-violet-400/50 hover:text-violet-400 transition-colors disabled:opacity-50">Upgrade to Pro $7/mo</button>
       </footer>
     </main>
     </>
