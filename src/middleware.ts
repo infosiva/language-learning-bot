@@ -1,14 +1,23 @@
 import { clerkMiddleware } from '@clerk/nextjs/server'
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
-// All routes are public — auth is optional (enhances experience, not required)
-// Protected routes can be added here later if needed
-export default clerkMiddleware()
+// Only activate Clerk middleware when keys are present
+// Without keys the site stays fully functional (auth features just hidden)
+const hasClerkKeys = !!(
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY !== 'pk_test_REPLACE_ME' &&
+  process.env.CLERK_SECRET_KEY &&
+  process.env.CLERK_SECRET_KEY !== 'sk_test_REPLACE_ME'
+)
+
+export default hasClerkKeys
+  ? clerkMiddleware()
+  : (_req: NextRequest) => NextResponse.next()
 
 export const config = {
   matcher: [
-    // Skip Next.js internals and all static files
     '/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)',
-    // Always run for API routes
     '/(api|trpc)(.*)',
   ],
 }

@@ -36,22 +36,32 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 }
 
+const clerkAppearance = {
+  variables: { colorPrimary: '#7c3aed', colorBackground: '#030305', colorText: '#ffffff' },
+  elements: {
+    formButtonPrimary: 'bg-violet-600 hover:bg-violet-700 text-white',
+    card: 'bg-[#0d0d1a] border border-white/10 shadow-2xl',
+    headerTitle: 'text-white',
+    headerSubtitle: 'text-white/60',
+    socialButtonsBlockButton: 'border-white/10 bg-white/5 hover:bg-white/10 text-white',
+    formFieldInput: 'bg-white/5 border-white/10 text-white',
+    footerActionLink: 'text-violet-400 hover:text-violet-300',
+  },
+}
+
+const hasClerkKeys = !!(
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY &&
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY !== 'pk_test_REPLACE_ME'
+)
+
+function MaybeClerk({ children }: { children: React.ReactNode }) {
+  if (!hasClerkKeys) return <>{children}</>
+  return <ClerkProvider appearance={clerkAppearance}>{children}</ClerkProvider>
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider
-      appearance={{
-        variables: { colorPrimary: '#7c3aed', colorBackground: '#030305', colorText: '#ffffff' },
-        elements: {
-          formButtonPrimary: 'bg-violet-600 hover:bg-violet-700 text-white',
-          card: 'bg-[#0d0d1a] border border-white/10 shadow-2xl',
-          headerTitle: 'text-white',
-          headerSubtitle: 'text-white/60',
-          socialButtonsBlockButton: 'border-white/10 bg-white/5 hover:bg-white/10 text-white',
-          formFieldInput: 'bg-white/5 border-white/10 text-white',
-          footerActionLink: 'text-violet-400 hover:text-violet-300',
-        },
-      }}
-    >
+    <MaybeClerk>
     <html lang="en" suppressHydrationWarning>
       <head>
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -72,6 +82,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <CookieConsent />
       </body>
     </html>
-    </ClerkProvider>
+    </MaybeClerk>
   )
 }

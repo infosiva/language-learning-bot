@@ -30,7 +30,8 @@ function Wordmark({ color }: { color: string }) {
 export default function SharedNavbar({ brand }: { brand: BrandConfig }) {
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
-  const { isSignedIn } = useAuth()
+  // isSignedIn is undefined when Clerk keys aren't configured — treat as signed out
+  const { isSignedIn = false } = useAuth()
 
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 32)
