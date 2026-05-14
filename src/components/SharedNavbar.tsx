@@ -37,16 +37,16 @@ export default function SharedNavbar({ brand }: { brand: BrandConfig }) {
             : 'bg-transparent'
           }`}
       >
-        <div className="max-w-5xl mx-auto px-5 sm:px-8 h-14 flex items-center justify-between">
+        <div className="max-w-5xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group select-none">
+          <Link href="/" className="flex items-center gap-2.5 group select-none">
             <span
-              className="text-lg leading-none transition-transform duration-200 group-hover:scale-110"
+              className="text-2xl leading-none transition-transform duration-200 group-hover:scale-110"
               aria-hidden
             >
               {brand.icon}
             </span>
-            <span className="font-semibold text-white/90 text-sm tracking-tight">
+            <span className="font-bold text-white text-base tracking-tight">
               {brand.name}
             </span>
           </Link>
@@ -60,7 +60,7 @@ export default function SharedNavbar({ brand }: { brand: BrandConfig }) {
                   href={l.href}
                   target={l.external ? '_blank' : undefined}
                   rel={l.external ? 'noopener noreferrer' : undefined}
-                  className="px-3 py-1.5 text-[13px] text-white/45 hover:text-white/90 rounded-md hover:bg-white/[0.04] transition-all duration-150"
+                  className="px-3.5 py-2 text-sm text-white/55 hover:text-white/90 rounded-lg hover:bg-white/[0.05] transition-all duration-150"
                 >
                   {l.label}
                 </Link>
@@ -72,11 +72,11 @@ export default function SharedNavbar({ brand }: { brand: BrandConfig }) {
           <div className="hidden md:flex items-center">
             <Link
               href={cta.href}
-              className="px-3.5 py-1.5 text-[13px] font-medium rounded-lg border transition-all duration-150 hover:-translate-y-px active:translate-y-0"
+              className="px-5 py-2 text-sm font-semibold rounded-xl border transition-all duration-150 hover:-translate-y-px active:translate-y-0"
               style={{
                 color: brand.color,
-                borderColor: `${brand.color}40`,
-                background: `${brand.color}10`,
+                borderColor: `${brand.color}50`,
+                background: `${brand.color}15`,
               }}
             >
               {cta.label}
