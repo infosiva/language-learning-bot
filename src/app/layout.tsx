@@ -37,15 +37,34 @@ export const metadata: Metadata = {
 }
 
 const clerkAppearance = {
-  variables: { colorPrimary: '#7c3aed', colorBackground: '#030305', colorText: '#ffffff' },
+  variables: {
+    colorPrimary: '#7c3aed',
+    colorBackground: '#0d0d1a',
+    colorText: '#ffffff',
+    colorTextSecondary: 'rgba(255,255,255,0.6)',
+    colorInputBackground: 'rgba(255,255,255,0.05)',
+    colorInputText: '#ffffff',
+    colorNeutral: '#ffffff',
+    borderRadius: '12px',
+  },
   elements: {
-    formButtonPrimary: 'bg-violet-600 hover:bg-violet-700 text-white',
     card: 'bg-[#0d0d1a] border border-white/10 shadow-2xl',
+    formButtonPrimary: 'bg-violet-600 hover:bg-violet-700 text-white',
+    socialButtonsBlockButton: 'border-white/10 bg-white/5 hover:bg-white/10 text-white',
+    socialButtonsBlockButtonText: 'text-white',
+    formFieldInput: 'bg-white/5 border-white/10 text-white placeholder:text-white/30',
+    formFieldLabel: 'text-white/70',
     headerTitle: 'text-white',
     headerSubtitle: 'text-white/60',
-    socialButtonsBlockButton: 'border-white/10 bg-white/5 hover:bg-white/10 text-white',
-    formFieldInput: 'bg-white/5 border-white/10 text-white',
+    identityPreviewText: 'text-white',
+    identityPreviewEditButton: 'text-violet-400',
     footerActionLink: 'text-violet-400 hover:text-violet-300',
+    footerActionText: 'text-white/40',
+    dividerLine: 'bg-white/10',
+    dividerText: 'text-white/30',
+    formFieldSuccessText: 'text-green-400',
+    alertText: 'text-white',
+    badge: 'hidden',
   },
 }
 
