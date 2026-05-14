@@ -946,19 +946,21 @@ export default function Home() {
 
       <nav className="border-b border-white/8 backdrop-blur-xl bg-white/[0.02] shrink-0">
         <div className="max-w-3xl mx-auto px-3 sm:px-6 h-12 flex items-center justify-between gap-2 overflow-hidden">
-          {/* Left: SpeakIQ home link + session info */}
+          {/* Left: back home button + session info */}
           <div className="flex items-center gap-2 min-w-0">
             <button
               onClick={() => { setSetup(true); setMessages([]); setWordCount(0); setGrammarErrors([]) }}
-              className="flex items-center gap-1.5 shrink-0 group"
+              className="flex items-center gap-1.5 shrink-0 group px-2.5 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] hover:bg-white/[0.08] hover:border-violet-500/40 transition-all"
               aria-label="Back to home"
             >
-              <div className="w-6 h-6 rounded-md bg-gradient-to-br from-violet-500 to-cyan-500 flex items-center justify-center text-xs shadow-md shadow-violet-500/30 group-hover:scale-110 transition-transform">✦</div>
-              <span className="hidden sm:block text-xs font-bold text-white/40 group-hover:text-white/70 transition-colors">SpeakIQ</span>
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="text-white/50 group-hover:text-violet-400 transition-colors shrink-0">
+                <path d="M8 10L4 6l4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
+              <span className="text-xs font-semibold text-white/50 group-hover:text-violet-400 transition-colors leading-none">Home</span>
             </button>
-            <span className="text-white/15 shrink-0">·</span>
-            <div className="font-semibold text-xs sm:text-sm truncate text-white/80">
-              {language} <span className="text-white/25">·</span> <span className="text-white/50">{modeObj?.label}</span>
+            <span className="text-white/15 shrink-0 hidden sm:block">·</span>
+            <div className="font-semibold text-xs sm:text-sm truncate text-white/70 hidden sm:block">
+              {language} <span className="text-white/25">·</span> <span className="text-white/40">{modeObj?.label}</span>
             </div>
           </div>
 
@@ -991,11 +993,6 @@ export default function Home() {
               className="hidden sm:block bg-white/[0.05] border border-white/10 rounded-lg px-2 py-1 text-xs text-white/60 focus:outline-none">
               {MODES.map(m => <option key={m.id} value={m.id}>{m.label}</option>)}
             </select>
-            {/* Back — always visible */}
-            <button onClick={() => { setSetup(true); setMessages([]); setWordCount(0); setGrammarErrors([]) }}
-              className="px-2 py-1.5 rounded-lg border border-white/10 bg-white/[0.04] text-xs text-white/40 hover:text-white/70 transition-colors">
-              ↩
-            </button>
           </div>
         </div>
       </nav>
