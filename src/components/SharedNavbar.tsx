@@ -52,16 +52,16 @@ export default function SharedNavbar({ brand }: { brand: BrandConfig }) {
             </span>
           </Link>
 
-          {/* Desktop links */}
+          {/* Desktop links — grouped pill */}
           {links.length > 0 && (
-            <div className="hidden md:flex items-center gap-0.5">
+            <div className="hidden md:flex items-center px-1 py-1 rounded-xl border border-white/[0.07] bg-white/[0.03] backdrop-blur-sm gap-0.5">
               {links.map(l => (
                 <Link
                   key={l.href}
                   href={l.href}
                   target={l.external ? '_blank' : undefined}
                   rel={l.external ? 'noopener noreferrer' : undefined}
-                  className="px-3.5 py-2 text-sm text-white/55 hover:text-white/90 rounded-lg hover:bg-white/[0.05] transition-all duration-150"
+                  className="px-3 py-1.5 text-xs font-medium text-white/50 hover:text-white/90 rounded-lg hover:bg-white/[0.06] transition-all duration-150"
                 >
                   {l.label}
                 </Link>
