@@ -1040,7 +1040,7 @@ export default function Home() {
       {/* Quick prompts */}
       {messages.length > 0 && messages.length < 10 && (
         <div className="border-t border-white/5 bg-black/10 shrink-0 px-4 py-2 w-full">
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 justify-center max-w-3xl mx-auto">
             {(mode === 'vocabulary'
               ? ['Teach me 5 more words', 'Give me example sentences', 'Quiz me on these words', 'Teach me numbers 1-10']
               : ['How do I say "thank you"?', 'Correct my last message', 'Give me a quiz', 'Tell me something interesting']
