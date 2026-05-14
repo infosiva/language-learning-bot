@@ -656,10 +656,10 @@ export default function Home() {
       {/* ── Hero + Setup — single viewport ── */}
       <section className="max-w-5xl mx-auto px-5 pt-4 sm:pt-10 pb-8 relative">
         {/* Two-column layout: setup first on mobile, hero left on desktop */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
 
           {/* Left: hero copy — shown second on mobile, first on desktop */}
-          <div className="order-2 lg:order-1">
+          <div className="order-2 lg:order-1 flex flex-col">
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-violet-500/40 bg-violet-500/10 text-violet-300 text-xs font-bold mb-4 backdrop-blur-sm">
               🌍 50+ Languages · AI Native Speaker Tutor · $7/mo
@@ -725,8 +725,8 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Pricing quick toggle */}
-            <div id="pricing" className="mt-6 p-4 rounded-2xl border border-white/[0.08] bg-white/[0.02] grid grid-cols-2 gap-px overflow-hidden">
+            {/* Pricing quick toggle — pushed to bottom of column */}
+            <div id="pricing" className="mt-auto pt-6 p-4 rounded-2xl border border-white/[0.08] bg-white/[0.02] grid grid-cols-2 gap-px overflow-hidden">
               {[
                 { name: 'Free', price: '$0', sub: 'forever', features: ['20 messages/day', '50+ languages', '7 session modes', 'Auto flashcards'], highlight: false },
                 { name: 'Pro', price: '$7', sub: '/month', features: ['Unlimited messages', 'Grammar reports', 'Progress saved forever', 'Priority AI speed'], highlight: true },
@@ -754,8 +754,8 @@ export default function Home() {
           </div>
 
           {/* Right: setup panel — shown first on mobile */}
-          <div className="order-1 lg:order-2">
-            <div className="glass-liquid rounded-2xl p-6 space-y-5" style={{ boxShadow: '0 0 60px rgba(139,92,246,0.15)' }}>
+          <div className="order-1 lg:order-2 flex flex-col">
+            <div className="glass-liquid rounded-2xl p-6 space-y-5 flex-1" style={{ boxShadow: '0 0 60px rgba(139,92,246,0.15)' }}>
               <div className="flex items-center justify-between">
                 <h2 className="font-black text-base text-white">Configure your session</h2>
                 {isPro && <span className="text-[10px] bg-violet-500/20 text-violet-400 px-2 py-0.5 rounded font-bold">⚡ PRO</span>}
