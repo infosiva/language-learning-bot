@@ -34,10 +34,17 @@
 /* ─────────────────────────────────────────
    Base
 ───────────────────────────────────────── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 html {
   scroll-behavior: smooth;
   text-rendering: optimizeLegibility;
   -webkit-text-size-adjust: 100%;
+  /* iOS Safari: overflow-x must be on html, not just body */
+  overflow-x: hidden;
+  max-width: 100%;
 }
 
 body {
@@ -48,6 +55,35 @@ body {
   -moz-osx-font-smoothing: grayscale;
   min-height: 100dvh;
   overflow-x: hidden;
+  max-width: 100%;
+  /* Prevent content from breaking viewport on mobile */
+  position: relative;
+}
+
+/* Prevent wide children from causing horizontal scroll */
+img, video, iframe, embed, object {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Common overflow culprits */
+pre {
+  overflow-x: auto;
+  max-width: 100%;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Touch tap highlight removal */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Mobile: ensure no element escapes viewport */
+@media (max-width: 768px) {
+  html, body {
+    overflow-x: hidden !important;
+  }
 }
 
 /* ─────────────────────────────────────────
