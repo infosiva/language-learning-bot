@@ -24,7 +24,7 @@ export function ConversationMode({ language, level, tutorName = 'Luna', classNam
   const [loading, setLoading] = useState(false)
   const bottomRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [turns])
+  useEffect(() => { bottomRef.current?.scrollIntoView({ behavior: 'smooth' }) }, [turns, loading])
 
   // Auto-greet on mount
   useEffect(() => {
