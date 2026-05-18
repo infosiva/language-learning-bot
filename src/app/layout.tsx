@@ -6,6 +6,7 @@ import SharedNavbar from '@/components/SharedNavbar'
 import Footer from '../../components/Footer'
 import DesignEffects from '@/components/DesignEffects'
 import AnimatedBackground from '@/components/AnimatedBackground'
+import ChatBot from '@/components/ChatBot'
 import type { BrandConfig } from '@/components/SharedNavbar'
 import CookieConsent from "../../components/CookieConsent";
 
@@ -67,6 +68,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <MaybeClerk>
     <html lang="en" suppressHydrationWarning>
       <head>
+        <meta name="Impact-Site-Verification" content="cec1d783-d697-4f52-a52f-2677e900984f" />
         <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
         <link rel="apple-touch-icon" href="/favicon.svg" />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -114,8 +116,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <DesignEffects />
         <div id="layout-nav"><SharedNavbar brand={brand} /></div>
         <main className="flex-1 pt-16">{children}</main>
-        <div id="layout-footer"><Footer siteName="SpeakIQ" /></div>
+        <div id="layout-footer" className="relative z-10 bg-[#05030a]"><Footer siteName="SpeakIQ" tagline="AI language tutor — 50+ languages, no account needed." /></div>
+      <ChatBot />
       <CookieConsent />
+        <Script src="http://31.97.56.148:3098/t.js" data-site="speakiq.app" strategy="afterInteractive" />
       </body>
     </html>
     </MaybeClerk>

@@ -122,12 +122,6 @@ export default function PricingPage() {
 
         {/* Trust bar */}
         <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-white/30 mb-20">
-          <span className="flex items-center gap-1.5">
-            <span className="text-yellow-400">★★★★★</span> 4.8/5 rating
-          </span>
-          <span>·</span>
-          <span>2,400+ active learners</span>
-          <span>·</span>
           <span>50+ languages</span>
           <span>·</span>
           <span>No credit card for free plan</span>

@@ -54,10 +54,10 @@ const POSTS = [
 ]
 
 const STATS = [
-  { label: 'Active learners', value: '2,400+' },
   { label: 'Languages', value: '50+' },
   { label: 'Learning modes', value: '7' },
-  { label: 'Avg rating', value: '4.8★' },
+  { label: 'Free plan', value: 'Forever' },
+  { label: 'Credit card', value: 'Not needed' },
 ]
 
 export default function SocialPage() {
@@ -86,8 +86,7 @@ export default function SocialPage() {
             AI that corrects your grammar, adapts to your level, and keeps you consistent with daily streaks.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 mb-8 text-xs text-white/30">
-            <span className="text-yellow-400">★★★★★</span>
-            <span>4.8/5 · 2,400+ learners · Free forever plan</span>
+            <span>50+ languages · 7 learning modes · Free forever plan</span>
           </div>
           <div className="flex flex-wrap justify-center gap-3">
             <Link href="/" className="px-8 py-3.5 rounded-xl font-bold bg-gradient-to-r from-violet-600 to-cyan-500 hover:from-violet-500 hover:to-cyan-400 transition text-white text-sm">

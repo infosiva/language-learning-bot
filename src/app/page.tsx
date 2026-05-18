@@ -8,6 +8,7 @@ import { StreakBadge } from '@/components/design'
 import { HeartsDisplay } from '@/components/gamification'
 import { loseHeart } from '@/lib/gamification/hearts'
 import GuidedTour, { type TourStep } from '@/components/GuidedTour'
+import { FloatingChat } from '@siva/shared-ui'
 
 const SPEAKIQ_TOUR: TourStep[] = [
   { target: '#hero-start-btn', title: 'Start learning free', icon: '🌍', body: 'Pick a language, set your level, and start chatting with your AI tutor instantly. No account needed.', placement: 'bottom' },
@@ -1025,22 +1026,6 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer style={{ borderTop:'1px solid rgba(124,58,237,0.12)', padding:'24px', background:'rgba(5,3,10,0.9)' }}>
-        <div style={{ maxWidth:900, margin:'0 auto', display:'flex', flexWrap:'wrap', justifyContent:'space-between', alignItems:'center', gap:16 }}>
-          <div>
-            <span style={{ fontWeight:900, fontSize:15, color:'#7c3aed' }}>SpeakIQ</span>
-            <p style={{ fontSize:11, color:'rgba(255,255,255,0.25)', marginTop:4 }}>AI language tutor — 50+ languages, no account needed.</p>
-          </div>
-          <div style={{ display:'flex', gap:20, flexWrap:'wrap' }}>
-            {[['About','/about'],['Privacy','/privacy'],['Terms','/terms'],['Cookie Policy','/cookies']].map(([label,href]) => (
-              <a key={label} href={href} style={{ fontSize:11, color:'rgba(255,255,255,0.25)', textDecoration:'none' }}
-                onMouseOver={e=>(e.currentTarget.style.color='#7c3aed')} onMouseOut={e=>(e.currentTarget.style.color='rgba(255,255,255,0.25)')}>{label}</a>
-            ))}
-          </div>
-          <p style={{ fontSize:10, color:'rgba(255,255,255,0.15)' }}>© 2026 SpeakIQ</p>
-        </div>
-      </footer>
     </main>
     <SpeakIQCookieBanner />
     </>
@@ -1277,6 +1262,15 @@ export default function Home() {
         </div>
       </div>
       <GuidedTour steps={SPEAKIQ_TOUR} storageKey="speakiq_tour_v1" accentColor="#7c3aed" />
+      <FloatingChat
+        apiRoute="/api/floatchat"
+        botName="SpeakIQ"
+        themeColor="#7c3aed"
+        welcomeMessage="Hi! I'm your SpeakIQ AI tutor. Ask me anything about language learning, or say 'show me a phrase in Spanish' for a visual."
+        allowImageGeneration={true}
+        imageApiRoute="/api/image"
+        systemContext="You are SpeakIQ, an AI language tutor. Help users learn languages through conversation, vocabulary, and practice. Be concise and encouraging."
+      />
     </main>
     </>
   )
