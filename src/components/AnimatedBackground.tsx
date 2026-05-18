@@ -21,7 +21,7 @@ export default function AnimatedBackground() {
       {/* Orange warm gradient */}
       <div style={{
         position: 'absolute', inset: 0,
-        background: 'radial-gradient(ellipse 70% 50% at 40% 20%, rgba(249,115,22,0.14) 0%, transparent 60%), radial-gradient(ellipse 50% 60% at 75% 75%, rgba(251,146,60,0.10) 0%, transparent 60%)',
+        background: 'radial-gradient(ellipse 70% 50% at 40% 20%, rgba(124,58,237,0.18) 0%, transparent 60%), radial-gradient(ellipse 50% 60% at 75% 75%, rgba(139,92,246,0.12) 0%, transparent 60%)',
       }} />
 
       {/* Sound wave SVG */}
@@ -31,7 +31,7 @@ export default function AnimatedBackground() {
           <ellipse key={i}
             cx="400" cy="100"
             rx={i * 70} ry={i * 14}
-            fill="none" stroke="#f97316" strokeWidth="1.5"
+            fill="none" stroke="#7c3aed" strokeWidth="1.5"
             opacity={1 / i}
           >
             <animate attributeName="rx" values={`${i*70};${i*80};${i*70}`} dur={`${2+i*0.5}s`} repeatCount="indefinite" />
@@ -51,7 +51,7 @@ export default function AnimatedBackground() {
               const freq = 0.04 + i * 0.02
               return `${x},${y * 800 + Math.sin(j * freq * Math.PI) * amp}`
             }).join(' ')}
-            fill="none" stroke="#f97316" strokeWidth="1.5"
+            fill="none" stroke="#7c3aed" strokeWidth="1.5"
           >
             <animate attributeName="points"
               values={
@@ -84,7 +84,7 @@ export default function AnimatedBackground() {
         <div key={i} style={{
           position: 'absolute', left: p.x, top: p.y,
           fontSize: p.size, opacity: p.op,
-          color: '#f97316',
+          color: '#7c3aed',
           fontFamily: 'system-ui, sans-serif',
           fontWeight: 500,
           animation: `float ${p.dur} ease-in-out infinite`,
@@ -92,8 +92,8 @@ export default function AnimatedBackground() {
         }}>{chars[i]}</div>
       ))}
 
-      <div className="orb orb-1" style={{ background: 'radial-gradient(circle, rgba(249,115,22,0.18), rgba(251,146,60,0.08) 60%, transparent)', top: '-80px', left: '-60px' }} />
-      <div className="orb orb-2" style={{ background: 'radial-gradient(circle, rgba(251,146,60,0.12), transparent 70%)', bottom: '5%', right: '-80px' }} />
+      <div className="orb orb-1" style={{ background: 'radial-gradient(circle, rgba(124,58,237,0.22), rgba(139,92,246,0.08) 60%, transparent)', top: '-80px', left: '-60px' }} />
+      <div className="orb orb-2" style={{ background: 'radial-gradient(circle, rgba(139,92,246,0.10), transparent 70%)', bottom: '5%', right: '-80px' }} />
     </div>
   )
 }
