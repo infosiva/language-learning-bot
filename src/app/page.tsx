@@ -716,7 +716,7 @@ export default function Home() {
         onDismiss={dismissGate}
       />
     )}
-    <main className="min-h-screen relative z-10 overflow-x-hidden flex flex-col">
+    <main className="relative z-10 overflow-x-hidden flex flex-col" style={{ height: 'calc(100svh - 64px)', overflow: 'hidden' }}>
       {/* ── Background system ── */}
       {/* Fixed dot-grid pattern */}
       <div className="fixed inset-0 pointer-events-none z-0" style={{
@@ -768,12 +768,12 @@ export default function Home() {
       )}
 
       {/* ── Hero + Setup — single viewport ── */}
-      <section className="flex-1 max-w-5xl w-full mx-auto px-5 pt-4 sm:pt-10 pb-8 relative">
+      <section className="flex-1 max-w-5xl w-full mx-auto px-5 pt-4 sm:pt-6 pb-4 relative flex flex-col min-h-0 overflow-y-auto">
         {/* Two-column layout: setup first on mobile, hero left on desktop */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 flex-1 min-h-0 items-stretch">
 
           {/* Left: hero copy — shown second on mobile, first on desktop */}
-          <div className="order-2 lg:order-1 flex flex-col">
+          <div className="order-2 lg:order-1 flex flex-col min-h-0">
             {/* Badge */}
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-violet-500/40 bg-violet-500/10 text-violet-300 text-xs font-bold mb-4 backdrop-blur-sm">
               🌍 50+ Languages · AI Native Speaker Tutor · $7/mo
@@ -868,12 +868,12 @@ export default function Home() {
           </div>
 
           {/* Right: setup panel — shown first on mobile */}
-          <div className="order-1 lg:order-2 flex flex-col">
+          <div className="order-1 lg:order-2 flex flex-col min-h-0">
             {/* Mobile-only tagline — navbar already shows logo, just add context */}
             <div className="lg:hidden mb-4">
               <p className="text-sm text-white/50 leading-snug">AI tutor for 50+ languages. Pick your language and start a free conversation — no account needed.</p>
             </div>
-            <div className="glass-liquid rounded-2xl p-6 space-y-5 flex-1" style={{ boxShadow: '0 0 60px rgba(139,92,246,0.15)' }}>
+            <div className="glass-liquid rounded-2xl p-6 space-y-5 flex-1 overflow-y-auto min-h-0" style={{ boxShadow: '0 0 60px rgba(139,92,246,0.15)' }}>
               <div className="flex items-center justify-between">
                 <h2 className="font-black text-base text-white">Configure your session</h2>
                 {isPro && <span className="text-[10px] bg-violet-500/20 text-violet-400 px-2 py-0.5 rounded font-bold">⚡ PRO</span>}
@@ -976,52 +976,6 @@ export default function Home() {
 
               <p className="text-center text-[10px] text-white/20">20 free messages/day · No credit card needed</p>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Contextual Affiliates ── */}
-      <section className="max-w-4xl mx-auto px-6 pb-16">
-        <SpeakIQAffiliates />
-      </section>
-
-      {/* Competitor comparison */}
-      <section style={{ borderTop:'1px solid rgba(124,58,237,0.15)', padding:'48px 24px' }}>
-        <div style={{ maxWidth:800, margin:'0 auto' }}>
-          <div style={{ textAlign:'center', marginBottom:32 }}>
-            <p style={{ fontSize:10, color:'rgba(124,58,237,0.5)', letterSpacing:'0.15em', textTransform:'uppercase', marginBottom:8 }}>How we compare</p>
-            <h2 style={{ fontSize:20, fontWeight:800, color:'#f5f3ff' }}>SpeakIQ vs alternatives</h2>
-          </div>
-          <div style={{ overflowX:'auto' }}>
-            <table style={{ width:'100%', borderCollapse:'collapse', fontSize:12 }}>
-              <thead>
-                <tr style={{ borderBottom:'1px solid rgba(124,58,237,0.2)' }}>
-                  {['Feature','SpeakIQ','Duolingo','Babbel','Rosetta Stone'].map((h,i) => (
-                    <th key={h} style={{ padding:'10px 12px', textAlign:i===0?'left':'center',
-                      color: i===1 ? '#7c3aed' : 'rgba(255,255,255,0.3)', fontWeight:700, fontSize:11, letterSpacing:'0.05em' }}>{h}</th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  ['AI conversation partner','✅ Claude AI','❌','❌','❌'],
-                  ['50+ languages','✅','✅ 40+','✅ 14','✅ 25+'],
-                  ['No gamification pressure','✅','❌ Streaks','❌','❌'],
-                  ['No account required','✅','❌','❌','❌'],
-                  ['Pronunciation feedback','✅ AI','❌','✅ Limited','✅'],
-                  ['Custom scenarios','✅','❌','⚠️ Fixed','❌'],
-                  ['Cost','Free / $7 mo','Free / $7 mo','$14/mo','$12/mo'],
-                ].map(row => (
-                  <tr key={row[0]} style={{ borderBottom:'1px solid rgba(124,58,237,0.07)' }}>
-                    {row.map((cell,i) => (
-                      <td key={i} style={{ padding:'9px 12px', textAlign:i===0?'left':'center',
-                        color: i===1 ? '#7c3aed' : i===0 ? 'rgba(255,255,255,0.55)' : 'rgba(255,255,255,0.25)',
-                        background: i===1 ? 'rgba(124,58,237,0.04)' : 'transparent', fontSize:11 }}>{cell}</td>
-                    ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
           </div>
         </div>
       </section>
